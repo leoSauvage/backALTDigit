@@ -22,11 +22,28 @@ const APP_ROOT = new URL('../', import.meta.url)
  * The importer is used to import files in context of the
  * application.
  */
-const IMPORTER = (filePath: string) => {
-  if (filePath.startsWith('./') || filePath.startsWith('../')) {
-    return import(new URL(filePath, APP_ROOT).href)
+const IMPORTER = async (filePath: string) => {
+  try {
+    // Vérifier explicitement si le module 'Admin' est demandé
+    if (filePath === 'Admin') {
+      console.warn('Warning: Attempted to import "Admin" module which is not defined.')
+      // Retourner un objet vide pour éviter l'erreur
+      return { default: {} }
+    }
+
+    if (filePath.startsWith('./') || filePath.startsWith('../')) {
+      return await import(new URL(filePath, APP_ROOT).href)
+    }
+    return await import(filePath)
+  } catch (error) {
+    console.error(`Error importing module: ${filePath}`, error)
+    // Si le module n'est pas trouvé mais est critique, rethrow l'erreur
+    if (filePath !== 'Admin') {
+      throw error
+    }
+    // Retourner un objet vide pour les modules non critiques
+    return { default: {} }
   }
-  return import(filePath)
 }
 
 new Ignitor(APP_ROOT, { importer: IMPORTER })

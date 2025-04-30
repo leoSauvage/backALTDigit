@@ -1,0 +1,41 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "NodeNext",
+        "outDir": "./build",
+        "rootDir": "./",
+        "paths": {
+            "#app/*": [
+                "./build/app/*"
+            ],
+            "#models/*": [
+                "./build/app/models/*"
+            ],
+            "#controllers/*": [
+                "./build/app/controllers/*"
+            ],
+            "#middleware/*": [
+                "./build/app/middleware/*"
+            ],
+            "#exceptions/*": [
+                "./build/app/exceptions/*"
+            ],
+            "#config/*": [
+                "./build/config/*"
+            ],
+            "#types/*": [
+                "./build/app/types/*"
+            ],
+            "#services/*": [
+                "./build/app/services/*"
+            ],
+            "#start/*": [
+                "./build/start/*"
+            ]
+        }
+    },
+    "include": [
+        "./**/*"
+    ]
+}

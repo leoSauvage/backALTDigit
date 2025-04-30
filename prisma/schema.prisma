@@ -1,0 +1,278 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ENUMS
+
+// Proposition d'extension de l'enum TypeActions
+enum TypeActions {
+  EMAIL          // Envoi d'emails
+  QUESTIONNAIRE  // Création de formulaires
+  VALIDER        // Validation manuelle d'une étape
+  SIGNER         // Signature électronique
+  GENERER        // Génération de documents
+  NOTIFIER   // Notifications in-app
+}
+
+enum FieldType {
+  Text              // Texte simple
+  LongText          // Texte long (paragraphe)
+  Number            // Nombre entier
+  Decimal           // Nombre décimal
+  Boolean           // Vrai/Faux
+  Date              // Date
+  DateTime          // Date et heure
+  Time              // Heure
+  Select            // Sélection unique
+  MultiSelect       // Sélection multiple
+  Currency          // Montant avec devise
+  Email             // Adresse email
+  Phone             // Numéro de téléphone
+  Address           // Adresse complète
+  File              // Pièce jointe
+  Country
+  City
+  Nationality
+  TypeOfCompany
+  Contact
+}
+
+enum Languages {
+  Français
+  Anglais
+}
+
+enum Status {
+  PREPARATION
+  NEGOCIATION
+  SIGNATURE
+  APPLICATION
+}
+
+enum Rights {
+  EDITOR
+  COMMENTATOR
+}
+
+// MODELS
+
+model Company {
+  id      String   @id @default(uuid())
+  name    String   @unique
+  email   String   @unique
+  users   User[]
+  tickets Ticket[]
+  files   File[]
+}
+
+model File {
+  id       String  @id @default(uuid())
+  name     String  @unique
+  location String  @unique
+  company        Company     @relation(fields: [company_id], references: [id])
+  company_id     String
+}
+
+model Role {
+  id          String             @id @default(uuid())
+  name        String             @unique
+  users       User[]
+  permissions PermissionRole[]
+}
+
+model User {
+  id             String       @id @default(uuid())
+  email          String       @unique
+  password_hash  String
+  first_name     String?
+  last_name      String?
+  is_active      Boolean      @default(true)
+  created_at     DateTime     @default(now())
+  updated_at     DateTime     @default(now())
+  role           Role         @relation(fields: [role_id], references: [id])
+  role_id        String
+  company        Company      @relation(fields: [company_id], references: [id])
+  company_id     String
+  createdWorkflows Workflow[] @relation("CreatedWorkflows")
+  comments       Comment[]
+  notifications  Notification[]
+  tickets        Ticket[]
+  usercontracts  UserContract[]
+}
+
+model Permission {
+  id          String            @id @default(uuid())
+  name        String            @unique
+  roles       PermissionRole[]
+  
+}
+
+model PermissionRole {
+  permission_id String
+  role_id       String
+  
+
+  permission Permission @relation(fields: [permission_id], references: [id])
+  role       Role       @relation(fields: [role_id], references: [id])
+
+  @@id([permission_id, role_id])
+}
+
+model ContractTemplate {
+  id               String    @id @default(uuid())
+  name             String
+  template_content String
+  contracts        Contract[]
+  template_fields  TemplateField[]
+}
+
+model UserContract {
+  user_id     String
+  contract_id String
+  
+
+  user User           @relation(fields: [user_id], references: [id])
+  contract Contract   @relation(fields: [contract_id], references: [id])
+
+  @@id([user_id, contract_id])
+  droit Rights
+}
+//Dynnamic fields
+// Modèle pour définir les champs dynamiques
+model DynamicField {
+  id                String      @id @default(uuid())
+  key               String      // Identifiant technique du champ
+  label             String      // Libellé affiché à l'utilisateur
+  type              FieldType   // Type de champ
+  description       String?     // Description/aide pour le champ
+  is_required       Boolean     @default(false)
+  placeholder       String?     // Texte d'exemple
+  created_at        DateTime    @default(now())
+  updated_at        DateTime    @updatedAt
+  // Relations
+  template_fields   TemplateField[]  // Relation avec les modèles de contrat
+  field_values      FieldValue[]     // Valeurs saisies
+}
+
+// Lien entre champs et modèles de contrat
+model TemplateField {
+  dynamic_field    DynamicField      @relation(fields: [field_id], references: [id])
+  field_id         String
+  contract_template ContractTemplate @relation(fields: [template_id], references: [id])
+  template_id       String
+  x_position       Int?              // Position X dans le document
+  y_position       Int?              // Position Y dans le document
+  page_number      Int?              // Numéro de page dans le document
+  @@id([field_id, template_id])
+}
+
+// Valeurs des champs pour les contrats
+model FieldValue {
+  id             String         @id @default(uuid())
+  contract       Contract        @relation(fields: [contract_id], references: [id])
+  contract_id    String
+  field          DynamicField    @relation(fields: [field_id], references: [id])
+  field_id       String
+  value          String          // Valeur stockée (convertie en chaîne)
+  
+  @@unique([contract_id, field_id])
+}
+
+model Contract {
+  id           String    @id @default(uuid())
+  template     ContractTemplate? @relation(fields: [template_id], references: [id])
+  template_id  String?
+  workflow     Workflow          @relation(fields: [workflow_id], references: [id])
+  workflow_id  String
+  title        String
+  status       Status
+  data         Json
+  language     Languages
+  isConfidential Boolean 
+  created_by_id String?   //User.id
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @default(now())
+  archived_at  DateTime?
+  comments     Comment[]
+  usercontracts  UserContract[]
+  field_values FieldValue[]
+}
+
+model Workflow {
+  id          String   @id @default(uuid())
+  name        String
+  created_by  User?    @relation("CreatedWorkflows", fields: [created_by_id], references: [id])
+  created_by_id String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+  steps       Step[]
+  contracts Contract[]
+}
+
+model Step {
+  id           String   @id @default(uuid())
+  workflow     Workflow @relation(fields: [workflow_id], references: [id])
+  workflow_id  String
+  step         Int
+  name         String
+  stepActions  StepAction[]
+}
+
+model Action {
+  id          String        @id @default(uuid())
+  name        TypeActions
+  config      Json
+  stepActions StepAction[]
+}
+
+model StepAction {
+  id           String    @id @default(uuid())
+  step         Step      @relation(fields: [step_id], references: [id])
+  step_id      String
+  action       Action    @relation(fields: [action_id], references: [id])
+  action_id    String
+  action_order Int
+  is_required  Boolean   @default(true)
+}
+
+model Comment {
+  id           String   @id @default(uuid())
+  contract     Contract @relation(fields: [contract_id], references: [id])
+  contract_id  String
+  commented_by User?    @relation(fields: [commented_by_id], references: [id])
+  commented_by_id String?
+  comment      String
+  position     Int
+  created_at   DateTime @default(now())
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [user_id], references: [id])
+  user_id    String
+  type       String
+  payload    Json
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+}
+
+model Setting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value Json
+}
+
+model Ticket {
+  id         String   @id @default(uuid())
+  title      String
+  content    String
+  user       User     @relation(fields: [user_id], references: [id])
+  user_id    String
+  company    Company  @relation(fields: [company_id], references: [id])
+  company_id String
+}

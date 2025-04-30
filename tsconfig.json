@@ -1,7 +1,25 @@
 {
   "extends": "@adonisjs/tsconfig/tsconfig.app.json",
   "compilerOptions": {
-    "rootDir": "./",
-    "outDir": "./build"
+    "target": "ES2021",
+    "module": "NodeNext",
+    "moduleResolution": "node16", // Or "nodenext"
+    "strict": true,
+    "baseUrl": "./",
+    "paths": {
+      "#lib/*": ["./app/lib/*"],
+      "#app/*": ["./app/*"],
+      "#models/*": ["./app/models/*"],
+      "#controllers/*": ["./app/controllers/*"],
+      "#middleware/*": ["./app/middleware/*"],
+      "#exceptions/*": ["./app/exceptions/*"],
+      "#config/*": ["./config/*"],
+      "#types/*": ["./app/types/*"],
+      "#services/*": ["app/lib/*"],
+      "#start/*": ["./start/*"],
+      "@ioc:*": [
+        "./node_modules/@adonisjs/*"
+      ]
+    }
   }
 }

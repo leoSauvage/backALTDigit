@@ -187,8 +187,8 @@ model Contract {
   id           String    @id @default(uuid())
   template     ContractTemplate? @relation(fields: [template_id], references: [id])
   template_id  String?
-  workflow     Workflow          @relation(fields: [workflow_id], references: [id])
-  workflow_id  String
+ // workflow     Workflow          @relation(fields: [workflow_id], references: [id])
+ // workflow_id  String
   title        String
   status       Status
   data         Json
@@ -206,12 +206,13 @@ model Contract {
 model Workflow {
   id          String   @id @default(uuid())
   name        String
+  file_name   String
   created_by  User?    @relation("CreatedWorkflows", fields: [created_by_id], references: [id])
   created_by_id String?
   created_at  DateTime @default(now())
   updated_at  DateTime @default(now())
   steps       Step[]
-  contracts Contract[]
+  // contracts Contract[]
 }
 
 model Step {

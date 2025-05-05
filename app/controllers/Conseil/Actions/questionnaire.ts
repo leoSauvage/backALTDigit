@@ -1,13 +1,8 @@
 import { HttpContext } from '@adonisjs/core/http'
 import Questionnaire from '#models/Actions/questionnaire'
-import prisma from '#lib/prisma'
 import { FieldType } from '@prisma/client'
 
 export default class QuestionnaireController {
-    private questionnaireModel: Questionnaire
-    constructor() {
-        this.questionnaireModel = new Questionnaire(prisma)
-    }
 
     /**
      * Met à jour la configuration du questionnaire
@@ -17,7 +12,7 @@ export default class QuestionnaireController {
             const { id: actionId } = params
             const data = request.only(['config'])
 
-            const updatedConfig = await this.questionnaireModel.updateQuestionnaireConfig(actionId, data.config)
+            const updatedConfig = await Questionnaire.updateQuestionnaireConfig(actionId, data.config)
             return response.ok(updatedConfig)
         } catch (err) {
             const error = err as Error
@@ -65,7 +60,7 @@ export default class QuestionnaireController {
                 })
             }
 
-            const result = await this.questionnaireModel.addQuestion(actionId, data)
+            const result = await Questionnaire.addQuestion(actionId, data)
             return response.created(result)
         } catch (err) {
             const error = err as Error
@@ -99,7 +94,7 @@ export default class QuestionnaireController {
                 })
             }
 
-            const result = await this.questionnaireModel.updateQuestion(actionId, questionId, data)
+            const result = await Questionnaire.updateQuestion(actionId, questionId, data)
             return response.ok(result)
         } catch (err) {
             const error = err as Error
@@ -115,7 +110,7 @@ export default class QuestionnaireController {
     async deleteQuestion({ params, response }: HttpContext) {
         try {
             const { id: actionId, questionId } = params
-            const result = await this.questionnaireModel.deleteQuestion(actionId, questionId)
+            const result = await Questionnaire.deleteQuestion(actionId, questionId)
             return response.ok(result)
         } catch (err) {
             const error = err as Error
@@ -139,7 +134,7 @@ export default class QuestionnaireController {
                 })
             }
 
-            const result = await this.questionnaireModel.reorderQuestions(actionId, order)
+            const result = await Questionnaire.reorderQuestions(actionId, order)
             return response.ok(result)
         } catch (err) {
             const error = err as Error

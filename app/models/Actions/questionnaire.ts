@@ -1,17 +1,17 @@
-import { inject } from '@adonisjs/core'
-import { PrismaClient  } from '@prisma/client'
 import { QuestionnaireActionConfig, QuestionConfig } from '../../types/questionnaire.js'
 import { v4 as uuidv4 } from 'uuid'
 
-@inject()
+import prisma from '#lib/prisma'
+import Workflow from '#models/workflow'
+
+
 export default class QuestionnaireModel {
-    constructor(private prisma: PrismaClient) { }
 
     /**
      * Met à jour la configuration d'un questionnaire
      */
-    async updateQuestionnaireConfig(actionId: string, config: Partial<QuestionnaireActionConfig>) {
-        const action = await this.prisma.action.findUnique({
+    public static async updateQuestionnaireConfig(actionId: string, config: Partial<QuestionnaireActionConfig>) {
+        const action = await prisma.action.findUnique({
             where: { id: actionId }
         })
 
@@ -27,7 +27,7 @@ export default class QuestionnaireModel {
         }
 
         // Mettre à jour l'action
-        await this.prisma.action.update({
+        await prisma.action.update({
             where: { id: actionId },
             data: {
                 config: updatedConfig as any
@@ -40,10 +40,15 @@ export default class QuestionnaireModel {
     /**
      * Ajoute une question au questionnaire
      */
-    async addQuestion(actionId: string, questionData: Omit<QuestionConfig, 'id' | 'order'>) {
-        const action = await this.prisma.action.findUnique({
+    public static async addQuestion(actionId: string, questionData: Omit<QuestionConfig, 'id' | 'order'>) {
+        const action = await prisma.action.findUnique({
             where: { id: actionId }
         })
+
+        const workflowId = await Workflow.getWorkflowIdByActionId(actionId)
+        if (!workflowId) {
+            throw new Error('Workflow non trouvé pour cette action')
+        }
 
         if (!action) {
             throw new Error('Action non trouvée')
@@ -69,7 +74,7 @@ export default class QuestionnaireModel {
         const updatedQuestions = [...config.questions, newQuestion]
 
         // Mettre à jour la configuration
-        await this.prisma.action.update({
+        await prisma.action.update({
             where: { id: actionId },
             data: {
                 config: {
@@ -80,8 +85,9 @@ export default class QuestionnaireModel {
         })
 
         // Créer le DynamicField correspondant
-        const dynamicField = await this.prisma.dynamicField.create({
+        const dynamicField = await prisma.dynamicField.create({
             data: {
+                workflow_id : workflowId,
                 key: questionData.fieldKey,
                 type: questionData.type,
                 description: questionData.description,
@@ -97,8 +103,8 @@ export default class QuestionnaireModel {
     /**
      * Met à jour une question
      */
-    async updateQuestion(actionId: string, questionId: string, questionData: Partial<QuestionConfig>) {
-        const action = await this.prisma.action.findUnique({
+    public static async updateQuestion(actionId: string, questionId: string, questionData: Partial<QuestionConfig>) {
+        const action = await prisma.action.findUnique({
             where: { id: actionId }
         })
 
@@ -120,7 +126,7 @@ export default class QuestionnaireModel {
         })
 
         // Mettre à jour la configuration
-        await this.prisma.action.update({
+        await prisma.action.update({
             where: { id: actionId },
             data: {
                 config: {
@@ -134,7 +140,7 @@ export default class QuestionnaireModel {
         const question = updatedQuestions.find(q => q.id === questionId)
 
         if (question) {
-            await this.prisma.dynamicField.updateMany({
+            await prisma.dynamicField.updateMany({
                 where: { key: question.fieldKey },
                 data: {
                     key: question.fieldKey,
@@ -155,8 +161,8 @@ export default class QuestionnaireModel {
     /**
      * Supprime une question
      */
-    async deleteQuestion(actionId: string, questionId: string) {
-        const action = await this.prisma.action.findUnique({
+    public static async deleteQuestion(actionId: string, questionId: string) {
+        const action = await prisma.action.findUnique({
             where: { id: actionId }
         })
 
@@ -183,7 +189,7 @@ export default class QuestionnaireModel {
         }))
 
         // Mettre à jour la configuration
-        await this.prisma.action.update({
+        await prisma.action.update({
             where: { id: actionId },
             data: {
                 config: {
@@ -202,8 +208,8 @@ export default class QuestionnaireModel {
     /**
      * Change l'ordre des questions
      */
-    async reorderQuestions(actionId: string, questionOrder: { id: string, order: number }[]) {
-        const action = await this.prisma.action.findUnique({
+    public static async reorderQuestions(actionId: string, questionOrder: { id: string, order: number }[]) {
+        const action = await prisma.action.findUnique({
             where: { id: actionId }
         })
 
@@ -225,7 +231,7 @@ export default class QuestionnaireModel {
             .sort((a, b) => a.order - b.order)
 
         // Mettre à jour la configuration
-        await this.prisma.action.update({
+        await prisma.action.update({
             where: { id: actionId },
             data: {
                 config: {

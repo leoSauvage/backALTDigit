@@ -1,14 +1,8 @@
 import { HttpContext } from '@adonisjs/core/http'
 import Action from '#models/Actions/action'
-import prisma from '#lib/prisma'
 import { Prisma, TypeActions } from '@prisma/client'
 
 export default class ActionController {
-    private actionModel: Action
-    constructor() {
-        this.actionModel = new Action(prisma)
-    }
-
     /**
      * Crée une nouvelle action 
      */
@@ -22,7 +16,7 @@ export default class ActionController {
                 })
             }
 
-            const action = await this.actionModel.createAction(data)
+            const action = await Action.createAction(data)
             return response.created(action)
         } catch (err) {
             const error = err as Error
@@ -38,7 +32,7 @@ export default class ActionController {
     async show({ params, response }: HttpContext) {
         try {
             const { id: actionId } = params
-            const questionnaire = await this.actionModel.getAction(actionId)
+            const questionnaire = await Action.getAction(actionId)
             return response.ok(questionnaire)
         } catch (err) {
             const error = err as Error
@@ -55,7 +49,7 @@ export default class ActionController {
         try {
             const { id: actionId } = params
 
-            await this.actionModel.deleteAction(actionId)
+            await Action.deleteAction(actionId)
             return response.noContent()
         } catch (error) {
             if (error instanceof Error) {

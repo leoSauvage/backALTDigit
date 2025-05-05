@@ -97,6 +97,33 @@ export default class Workflow {
     }
 
     /**
+    * Retourne l'ID du workflow auquel appartient l'action donnée.
+    * @param actionId ID de l'action (UUID)
+    * @returns L'UUID du workflow, ou null si non trouvé.
+    */
+    public static async getWorkflowIdByActionId(actionId: string): Promise<string | null> {
+        // On récupère l'enregistrement StepAction, en incluant ses relations
+        const stepAction = await prisma.stepAction.findFirst({
+            where: { action_id: actionId },
+            include: {
+                step: {                       // on inclut la relation `step`
+                    include: {
+                        workflow: true            // et à l’intérieur, on inclut `workflow`
+                    }
+                }
+            }
+        })
+
+        // Si pas trouvé, on retourne null
+        if (!stepAction || !stepAction.step) {
+            return null
+        }
+
+        // stepAction.step.workflow est à présent défini
+        return stepAction.step.workflow.id
+    }
+
+    /**
      * Met à jour un workflow
      * @param id ID du workflow à mettre à jour
      * @param data Données à mettre à jour (nom et/ou nom du fichier)

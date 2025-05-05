@@ -1,21 +1,14 @@
 import { HttpContext } from '@adonisjs/core/http'
 import DynamicField from '#models/champsdynamique'
-import prisma from '#lib/prisma'
 
 export default class DynamicFieldController {
-    private dynamicFieldModel: DynamicField
-
-    constructor() {
-        this.dynamicFieldModel = new DynamicField(prisma)
-    }
-
     /**
      * Récupère les champs dynamiques pour un workflow donné
      */
     public async getFields({ params, response }: HttpContext) {
         try {
             const { workflowId } = params
-            const fields = await this.dynamicFieldModel.getFieldsByWorkflowId(workflowId)
+            const fields = await DynamicField.getFieldsByWorkflowId(workflowId)
             return response.ok(fields)
         } catch (error) {
             return response.status(500).json({
@@ -32,7 +25,7 @@ export default class DynamicFieldController {
             const { id } = params
             const data = request.body()
 
-            const updatedField = await this.dynamicFieldModel.updateField(id, data)
+            const updatedField = await DynamicField.updateField(id, data)
             return response.ok(updatedField)
         } catch (error) {
             return response.status(400).json({
@@ -47,7 +40,7 @@ export default class DynamicFieldController {
     public async deleteField({ params, response }: HttpContext) {
         try {
             const { id } = params
-            const deletedField = await this.dynamicFieldModel.deleteField(id)
+            const deletedField = await DynamicField.deleteField(id)
             return response.ok(deletedField)
         } catch (error) {
             return response.status(400).json({

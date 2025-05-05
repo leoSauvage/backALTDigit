@@ -1,5 +1,6 @@
 import prisma from '#lib/prisma'
 import type { Step as StepType } from '@prisma/client'
+import Workflow from './workflow.js'
 
 export default class Step {
   /**
@@ -7,9 +8,7 @@ export default class Step {
    */
   public static async create(workflowId: string, name: string, stepOrder?: number): Promise<StepType> {
     // Vérifier si le workflow existe
-    const workflow = await prisma.workflow.findUnique({
-      where: { id: workflowId }
-    })
+    const workflow = await Workflow.findById(workflowId)
 
     if (!workflow) {
       throw new Error('Workflow not found')

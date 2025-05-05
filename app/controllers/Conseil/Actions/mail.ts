@@ -1,14 +1,8 @@
 import { MailActionConfig } from '#types/email'
 import { HttpContext } from '@adonisjs/core/http'
 import Mail from '#models/Actions/mail'
-import prisma from '#lib/prisma'
+
 export default class MailController {
-    private mailModel: Mail
-
-    constructor() {
-        this.mailModel = new Mail(prisma)
-    }
-
     /**
      * Met à jour la configuration d'une action d'envoi de mail
      */
@@ -17,7 +11,7 @@ export default class MailController {
             const { id: actionId } = params
             const newConfig = request.body() as Partial<MailActionConfig>
 
-            const updatedConfig = await this.mailModel.updateMailActionConfig(actionId, newConfig)
+            const updatedConfig = await Mail.updateMailActionConfig(actionId, newConfig)
             return response.ok(updatedConfig)
         } catch (error) {
             if (error instanceof Error) {

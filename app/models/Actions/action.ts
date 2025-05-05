@@ -1,21 +1,20 @@
-import { inject } from '@adonisjs/core'
-import { PrismaClient, TypeActions, Prisma } from '@prisma/client'
+import { TypeActions, Prisma } from '@prisma/client'
+import prisma from '#lib/prisma'
 
-@inject()
-export default class ActionModel {
-    constructor(private prisma: PrismaClient) { }
+
+export default class Action {
 
     /**
      * Crée une nouvelle action de questionnaire
      */
-    async createAction(data: {
+    public static async createAction(data: {
+        typeAction : TypeActions,
         config: Prisma.InputJsonValue,
-        stepId: string,
-        typeAction : TypeActions
+        stepId: string
     }) {
 
         // Créer l'action
-        const action = await this.prisma.action.create({
+        const action = await prisma.action.create({
             data: {
                 type: data.typeAction,
                 config: data.config,
@@ -35,8 +34,8 @@ export default class ActionModel {
     /**
      * Récupère un questionnaire par son ID
      */
-    async getAction(actionId: string) {
-        const action = await this.prisma.action.findUnique({
+    public static async getAction(actionId: string) {
+        const action = await prisma.action.findUnique({
             where: { id: actionId }
         })
 
@@ -56,8 +55,8 @@ export default class ActionModel {
     /**
      * Supprime une action 
      */
-    async deleteAction(actionId: string): Promise<void> {
-        const action = await this.prisma.action.findUnique({
+    public static async deleteAction(actionId: string): Promise<void> {
+        const action = await prisma.action.findUnique({
             where: { id: actionId }
         })
 
@@ -65,7 +64,7 @@ export default class ActionModel {
             throw new Error('Action non trouvée')
         }
 
-        await this.prisma.action.delete({
+        await prisma.action.delete({
             where: { id: actionId }
         })
     }

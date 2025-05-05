@@ -148,8 +148,8 @@ model UserContract {
 // Modèle pour définir les champs dynamiques
 model DynamicField {
   id                String      @id @default(uuid())
-  workflow     Workflow          @relation(fields: [workflow_id], references: [id])
-  workflow_id  String
+  workflow          Workflow    @relation(fields: [workflow_id], references: [id])
+  workflow_id       String
   key               String      // Identifiant technique du champ
   type              FieldType   // Type de champ
   description       String?     // Description/aide pour le champ
@@ -241,7 +241,7 @@ model StepAction {
   step         Step      @relation(fields: [step_id], references: [id])
   step_id      String
   action       Action    @relation(fields: [action_id], references: [id])
-  action_id    String
+  action_id    String    @unique
   action_order Int
   is_required  Boolean   @default(true)
 }

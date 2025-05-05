@@ -40,8 +40,8 @@ export default class Workflow {
                     },
                     _count: {
                         select: {
-                            steps: true,
-                            contracts: true
+                            steps: true
+                            //contracts: true
                         }
                     }
                 },
@@ -118,7 +118,7 @@ export default class Workflow {
             where: { id },
             data: {
                 ...(data.name && { name: data.name }),
-                ...(data.fileName && { file_name: data.fileName }),
+                ...(data.fileName && { file_name: data.fileName }), //file name not working
                 updated_at: new Date()
             }
         })
@@ -138,7 +138,7 @@ export default class Workflow {
                         stepActions: true
                     }
                 },
-                contracts: true
+                //contracts: true
             }
         })
 
@@ -147,9 +147,9 @@ export default class Workflow {
         }
 
         // Vérifier si des contrats utilisent ce workflow
-        if (workflow.contracts.length > 0) {
-            throw new Error('Cannot delete workflow that is being used by contracts')
-        }
+        // if (workflow.contracts.length > 0) {
+        //     throw new Error('Cannot delete workflow that is being used by contracts')
+        // }
 
         // Transaction pour assurer l'intégrité des données lors de la suppression
         await prisma.$transaction(async (tx) => {

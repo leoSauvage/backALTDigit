@@ -1,7 +1,9 @@
 import router from '@adonisjs/core/services/router'
 
 // Importer les sous-routes
-import './routes/conseilSubRoutes/action.js'
+import './routes/conseilSubRoutes/Actions/questionnaire.js'
+import './routes/conseilSubRoutes/etape.js'
+import './routes/conseilSubRoutes/workflow.js'
 
 // Route de test pour l'API
 router.get('/api/test', async ({ response }) => {

@@ -7,7 +7,7 @@ export default class WorkflowController {
      */
     public async create({ request, response, auth }: HttpContext) {
         try {
-            const { name} = request.body()
+            const {name} = request.body()
 
             // Validation des données
             if (!name) {

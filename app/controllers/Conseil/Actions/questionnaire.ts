@@ -10,48 +10,14 @@ export default class QuestionnaireController {
     }
 
     /**
-     * Crée une nouvelle action de questionnaire
-     */
-    async create({ request, response }: HttpContext) {
-        try {
-            const data = request.only(['title','workflowId', 'stepId'])
-            if (!data.title || data.title.length < 3) {
-                return response.status(422).json({
-                    errors: [{ message: 'Le titre est requis et doit comporter au moins 3 caractères' }]
-                })
-            }
-
-            if (!data.workflowId) {
-                return response.status(422).json({
-                    errors: [{ message: 'L\'ID du workflow est requis' }]
-                })
-            }
-
-            if (!data.stepId) {
-                return response.status(422).json({
-                    errors: [{ message: 'L\'ID de l\'étape est requis' }]
-                })
-            }
-
-            const action = await this.questionnaireModel.createQuestionnaireAction(data)
-            return response.created(action)
-        } catch (err) {
-            const error = err as Error
-            return response.badRequest({
-                error: error.message || 'Erreur lors de la création du questionnaire'
-            })
-        }
-    }
-
-    /**
      * Met à jour la configuration du questionnaire
      */
     async updateConfig({ params, request, response }: HttpContext) {
         try {
             const { id: actionId } = params
-            const data = request.only(['title', 'nextActionId', 'storeResultPath'])
+            const data = request.only(['config'])
 
-            const updatedConfig = await this.questionnaireModel.updateQuestionnaireConfig(actionId, data)
+            const updatedConfig = await this.questionnaireModel.updateQuestionnaireConfig(actionId, data.config)
             return response.ok(updatedConfig)
         } catch (err) {
             const error = err as Error
@@ -61,21 +27,7 @@ export default class QuestionnaireController {
         }
     }
 
-    /**
-     * Récupère un questionnaire
-     */
-    async show({ params, response }: HttpContext) {
-        try {
-            const { id: actionId } = params
-            const questionnaire = await this.questionnaireModel.getQuestionnaire(actionId)
-            return response.ok(questionnaire)
-        } catch (err) {
-            const error = err as Error
-            return response.notFound({
-                error: error.message || 'Questionnaire non trouvé'
-            })
-        }
-    }
+    
 
     /**
      * Ajoute une question
@@ -84,7 +36,8 @@ export default class QuestionnaireController {
         try {
             const { id: actionId } = params
             const data = request.only([
-                'text',
+                'question',
+                'description',
                 'type',
                 'fieldKey',
                 'isRequired',
@@ -94,18 +47,17 @@ export default class QuestionnaireController {
             ])
 
             // Validation manuelle
-            if (!data.text || data.text.length < 3) {
+            if (!data.question || data.question < 3) {
                 return response.status(422).json({
                     errors: [{ message: 'Le texte de la question est requis et doit comporter au moins 3 caractères' }]
                 })
             }
 
-            if (!data.fieldKey || data.fieldKey.length < 3) {
+            if (!data.fieldKey) {
                 return response.status(422).json({
                     errors: [{ message: 'La clé du champ est requise et doit comporter au moins 3 caractères' }]
                 })
             }
-
             // Valider que le type est valide
             if (!data.type || !Object.values(FieldType).includes(data.type as FieldType)) {
                 return response.status(422).json({
@@ -130,7 +82,8 @@ export default class QuestionnaireController {
         try {
             const { id: actionId, questionId } = params
             const data = request.only([
-                'text',
+                'question',
+                'description',
                 'type',
                 'fieldKey',
                 'isRequired',
@@ -138,7 +91,7 @@ export default class QuestionnaireController {
                 'options',
                 'validation'
             ])
-
+            data.type = FieldType.Number
             // Validation du type si présent
             if (data.type && !Object.values(FieldType).includes(data.type as FieldType)) {
                 return response.status(422).json({

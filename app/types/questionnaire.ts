@@ -2,7 +2,8 @@ import { FieldType } from '.prisma/client'
 
 export interface QuestionConfig {
     id: string
-    text: string
+    question: string
+    description? : string
     type: FieldType
     fieldKey: string // Identifiant technique pour le DynamicField
     isRequired: boolean
@@ -20,8 +21,5 @@ export interface QuestionConfig {
 
 export interface QuestionnaireActionConfig {
     title: string
-    description?: string
     questions: QuestionConfig[]
-    nextActionId?: string // ID de l'action suivante dans le workflow
-    storeResultPath?: string // Chemin où stocker les résultats
 }

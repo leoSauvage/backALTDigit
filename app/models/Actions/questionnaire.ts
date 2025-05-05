@@ -1,44 +1,11 @@
 import { inject } from '@adonisjs/core'
-import { PrismaClient, TypeActions } from '@prisma/client'
-import { QuestionnaireActionConfig, QuestionConfig } from '../../types/action.js'
+import { PrismaClient  } from '@prisma/client'
+import { QuestionnaireActionConfig, QuestionConfig } from '../../types/questionnaire.js'
 import { v4 as uuidv4 } from 'uuid'
 
 @inject()
 export default class QuestionnaireModel {
     constructor(private prisma: PrismaClient) { }
-
-    /**
-     * Crée une nouvelle action de questionnaire
-     */
-    async createQuestionnaireAction(data: {
-        title: string
-        description?: string
-        workflowId: string
-        stepId: string
-    }) {
-        // Créer la configuration initiale du questionnaire
-        const config: QuestionnaireActionConfig = {
-            title: data.title,
-            questions: []
-        }
-
-        // Créer l'action
-        const action = await this.prisma.action.create({
-            data: {
-                name: TypeActions.Questionnaire,
-                config: config as any,
-                stepActions: {
-                    create: {
-                        step_id: data.stepId,
-                        action_order: 1, // Par défaut, à ajuster si nécessaire
-                        is_required: true
-                    }
-                }
-            }
-        })
-
-        return action
-    }
 
     /**
      * Met à jour la configuration d'un questionnaire
@@ -63,8 +30,7 @@ export default class QuestionnaireModel {
         await this.prisma.action.update({
             where: { id: actionId },
             data: {
-                config: updatedConfig as any,
-                description: `Questionnaire: ${updatedConfig.title}`
+                config: updatedConfig as any
             }
         })
 
@@ -88,7 +54,8 @@ export default class QuestionnaireModel {
         // Créer la nouvelle question
         const newQuestion: QuestionConfig = {
             id: uuidv4(),
-            text: questionData.text,
+            question: questionData.question,
+            description: questionData.description,
             type: questionData.type,
             fieldKey: questionData.fieldKey,
             isRequired: questionData.isRequired,
@@ -116,10 +83,8 @@ export default class QuestionnaireModel {
         const dynamicField = await this.prisma.dynamicField.create({
             data: {
                 key: questionData.fieldKey,
-                label: questionData.text,
                 type: questionData.type,
-                is_required: questionData.isRequired,
-                placeholder: questionData.placeholder
+                description: questionData.description,
             }
         })
 
@@ -172,7 +137,7 @@ export default class QuestionnaireModel {
             await this.prisma.dynamicField.updateMany({
                 where: { key: question.fieldKey },
                 data: {
-                    label: questionData.text || undefined,
+                    key: question.fieldKey,
                     is_required: questionData.isRequired,
                     placeholder: questionData.placeholder,
                     type: questionData.type,
@@ -273,34 +238,5 @@ export default class QuestionnaireModel {
         return updatedQuestions
     }
 
-    /**
-     * Récupère un questionnaire par son ID
-     */
-    async getQuestionnaire(actionId: string) {
-        const action = await this.prisma.action.findUnique({
-            where: { id: actionId }
-        })
-
-        if (!action) {
-            throw new Error('Action non trouvée')
-        }
-
-        const config = action.config as unknown as QuestionnaireActionConfig
-
-        // Récupérer les DynamicFields associés
-        const fieldKeys = config.questions.map(q => q.fieldKey)
-        const dynamicFields = await this.prisma.dynamicField.findMany({
-            where: {
-                key: {
-                    in: fieldKeys
-                }
-            }
-        })
-
-        return {
-            action,
-            config,
-            dynamicFields
-        }
-    }
+    
 }

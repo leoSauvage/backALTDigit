@@ -30,6 +30,7 @@ enum FieldType {
   Time              // Heure
   Select            // Sélection unique
   MultiSelect       // Sélection multiple
+  Radio
   Currency          // Montant avec devise
   Email             // Adresse email
   Phone             // Numéro de téléphone
@@ -40,6 +41,7 @@ enum FieldType {
   Nationality
   TypeOfCompany
   Contact
+
 }
 
 enum Languages {
@@ -146,8 +148,9 @@ model UserContract {
 // Modèle pour définir les champs dynamiques
 model DynamicField {
   id                String      @id @default(uuid())
+  workflow     Workflow          @relation(fields: [workflow_id], references: [id])
+  workflow_id  String
   key               String      // Identifiant technique du champ
-  label             String      // Libellé affiché à l'utilisateur
   type              FieldType   // Type de champ
   description       String?     // Description/aide pour le champ
   is_required       Boolean     @default(false)
@@ -157,6 +160,7 @@ model DynamicField {
   // Relations
   template_fields   TemplateField[]  // Relation avec les modèles de contrat
   field_values      FieldValue[]     // Valeurs saisies
+
 }
 
 // Lien entre champs et modèles de contrat
@@ -206,13 +210,14 @@ model Contract {
 model Workflow {
   id          String   @id @default(uuid())
   name        String
-  file_name   String
+  file_name   String?
   created_by  User?    @relation("CreatedWorkflows", fields: [created_by_id], references: [id])
   created_by_id String?
   created_at  DateTime @default(now())
   updated_at  DateTime @default(now())
   steps       Step[]
   // contracts Contract[]
+  dynamic_field DynamicField[]
 }
 
 model Step {
@@ -226,7 +231,7 @@ model Step {
 
 model Action {
   id          String        @id @default(uuid())
-  name        TypeActions
+  type        TypeActions
   config      Json
   stepActions StepAction[]
 }

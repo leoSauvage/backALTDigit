@@ -118,19 +118,10 @@ model PermissionRole {
   permission_id String
   role_id       String
   
-
   permission Permission @relation(fields: [permission_id], references: [id])
   role       Role       @relation(fields: [role_id], references: [id])
 
   @@id([permission_id, role_id])
-}
-
-model ContractTemplate {
-  id               String    @id @default(uuid())
-  name             String
-  template_content String
-  contracts        Contract[]
-  template_fields  TemplateField[]
 }
 
 model UserContract {
@@ -147,50 +138,34 @@ model UserContract {
 //Dynnamic fields
 // Modèle pour définir les champs dynamiques
 model DynamicField {
-  id                String      @id @default(uuid())
-  workflow          Workflow    @relation(fields: [workflow_id], references: [id])
-  workflow_id       String
+  id                String      @id @default(uuid()) 
   key               String      // Identifiant technique du champ
+  value             String 
   type              FieldType   // Type de champ
   description       String?     // Description/aide pour le champ
   is_required       Boolean     @default(false)
   placeholder       String?     // Texte d'exemple
   created_at        DateTime    @default(now())
   updated_at        DateTime    @updatedAt
-  // Relations
-  template_fields   TemplateField[]  // Relation avec les modèles de contrat
-  field_values      FieldValue[]     // Valeurs saisies
 
+  contract          Contract    @relation(fields: [contract_id], references: [id])
+  contract_id       String
+  workflow_field    WorkflowField[]
 }
 
 // Lien entre champs et modèles de contrat
-model TemplateField {
+model WorkflowField {
   dynamic_field    DynamicField      @relation(fields: [field_id], references: [id])
   field_id         String
-  contract_template ContractTemplate @relation(fields: [template_id], references: [id])
-  template_id       String
-  x_position       Int?              // Position X dans le document
-  y_position       Int?              // Position Y dans le document
-  page_number      Int?              // Numéro de page dans le document
-  @@id([field_id, template_id])
+  workflow         Workflow          @relation(fields: [workflow_id], references: [id])
+  workflow_id      String
+  @@id([field_id, workflow_id])
 }
 
-// Valeurs des champs pour les contrats
-model FieldValue {
-  id             String         @id @default(uuid())
-  contract       Contract        @relation(fields: [contract_id], references: [id])
-  contract_id    String
-  field          DynamicField    @relation(fields: [field_id], references: [id])
-  field_id       String
-  value          String          // Valeur stockée (convertie en chaîne)
-  
-  @@unique([contract_id, field_id])
-}
+
 
 model Contract {
   id           String    @id @default(uuid())
-  template     ContractTemplate? @relation(fields: [template_id], references: [id])
-  template_id  String?
  // workflow     Workflow          @relation(fields: [workflow_id], references: [id])
  // workflow_id  String
   title        String
@@ -204,7 +179,7 @@ model Contract {
   archived_at  DateTime?
   comments     Comment[]
   usercontracts  UserContract[]
-  field_values FieldValue[]
+  dynamic_field DynamicField[]
 }
 
 model Workflow {
@@ -213,11 +188,11 @@ model Workflow {
   file_name   String?
   created_by  User?    @relation("CreatedWorkflows", fields: [created_by_id], references: [id])
   created_by_id String?
+  template_content String
   created_at  DateTime @default(now())
   updated_at  DateTime @default(now())
   steps       Step[]
-  // contracts Contract[]
-  dynamic_field DynamicField[]
+  workflowfield WorkflowField[]
 }
 
 model Step {

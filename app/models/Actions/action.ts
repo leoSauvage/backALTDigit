@@ -1,71 +1,67 @@
 import { TypeActions, Prisma } from '@prisma/client'
 import prisma from '#lib/prisma'
 
-
 export default class Action {
+  /**
+   * Crée une nouvelle action de questionnaire
+   */
+  public static async createAction(data: {
+    typeAction: TypeActions
+    config: Prisma.InputJsonValue
+    stepId: string
+  }) {
+    // Créer l'action
+    const action = await prisma.action.create({
+      data: {
+        type: data.typeAction,
+        config: data.config,
+        stepActions: {
+          create: {
+            step_id: data.stepId,
+            action_order: 1, // Par défaut, à ajuster si nécessaire
+            is_required: true,
+          },
+        },
+      },
+    })
 
-    /**
-     * Crée une nouvelle action de questionnaire
-     */
-    public static async createAction(data: {
-        typeAction : TypeActions,
-        config: Prisma.InputJsonValue,
-        stepId: string
-    }) {
+    return action
+  }
 
-        // Créer l'action
-        const action = await prisma.action.create({
-            data: {
-                type: data.typeAction,
-                config: data.config,
-                stepActions: {
-                    create: {
-                        step_id: data.stepId,
-                        action_order: 1, // Par défaut, à ajuster si nécessaire
-                        is_required: true
-                    }
-                }
-            }
-        })
+  /**
+   * Récupère un questionnaire par son ID
+   */
+  public static async getAction(actionId: string) {
+    const action = await prisma.action.findUnique({
+      where: { id: actionId },
+    })
 
-        return action
+    if (!action) {
+      throw new Error('Action non trouvée')
     }
 
-    /**
-     * Récupère un questionnaire par son ID
-     */
-    public static async getAction(actionId: string) {
-        const action = await prisma.action.findUnique({
-            where: { id: actionId }
-        })
+    const config = action.config as unknown
 
-        if (!action) {
-            throw new Error('Action non trouvée')
-        }
+    return {
+      action,
+      config,
+    }
+  }
 
-        const config = action.config as unknown 
+  /**
+   * Supprime une action
+   */
+  public static async deleteAction(actionId: string): Promise<void> {
+    const action = await prisma.action.findUnique({
+      where: { id: actionId },
+    })
 
-
-        return {
-            action,
-            config
-        }
+    if (!action) {
+      throw new Error('Action non trouvée')
     }
 
-    /**
-     * Supprime une action 
-     */
-    public static async deleteAction(actionId: string): Promise<void> {
-        const action = await prisma.action.findUnique({
-            where: { id: actionId }
-        })
-
-        if (!action) {
-            throw new Error('Action non trouvée')
-        }
-
-        await prisma.action.delete({
-            where: { id: actionId }
-        })
-    }
+    await prisma.action.delete({
+      where: { id: actionId },
+    })
+  }
 }

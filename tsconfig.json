@@ -17,9 +17,7 @@
       "#types/*": ["./app/types/*"],
       "#services/*": ["app/lib/*"],
       "#start/*": ["./start/*"],
-      "@ioc:*": [
-        "./node_modules/@adonisjs/*"
-      ]
+      "@ioc:*": ["./node_modules/@adonisjs/*"]
     }
   }
 }

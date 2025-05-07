@@ -1,6 +1,7 @@
 import router from '@adonisjs/core/services/router'
 
-const AdminRouter = router.group(() => {
+const AdminRouter = router
+  .group(() => {
     // Routes pour la gestion des utilisateurs du cabinet
     router.resource('cabinet-users', '#controllers/admin/cabinetUsersController')
 
@@ -13,8 +14,8 @@ const AdminRouter = router.group(() => {
 
     // Routes pour les statistiques globales
     router.get('stats', '#controllers/admin/statsController.index')
-})
-    .prefix('/api/admin')
-    .middleware(['auth', 'superAdmin'])
+  })
+  .prefix('/api/admin')
+  .middleware(['auth', 'superAdmin'])
 
 export default AdminRouter

@@ -1,6 +1,7 @@
 import router from '@adonisjs/core/services/router'
 
-const etapeRouter = router.group(() => {
+const etapeRouter = router
+  .group(() => {
     // Récupérer toutes les étapes d'un workflow
     router.get('/workflows/:workflow_id/steps', '#controllers/Conseil/etape.getByWorkflow')
 
@@ -18,8 +19,8 @@ const etapeRouter = router.group(() => {
 
     // Supprimer une étape
     router.delete('/steps/:id', '#controllers/Conseil/etape.delete')
-})
-    .prefix('/api/conseil')
+  })
+  .prefix('/api/conseil')
 //.middleware(['auth']) // Décommentez si vous avez l'authentification configurée
 
 export default etapeRouter

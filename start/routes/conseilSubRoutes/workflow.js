@@ -1,6 +1,7 @@
 import router from '@adonisjs/core/services/router'
 
-const workflowRouter = router.group(() => {
+const workflowRouter = router
+  .group(() => {
     // Récupérer tous les workflows
     router.get('/workflows', '#controllers/Conseil/workflow.index')
 
@@ -15,8 +16,8 @@ const workflowRouter = router.group(() => {
 
     // Supprimer un workflow
     router.delete('/workflows/:id', '#controllers/Conseil/workflow.delete')
-})
-    .prefix('/api/conseil')
+  })
+  .prefix('/api/conseil')
 //.middleware(['auth']) // Décommentez si vous avez l'authentification configurée
 
 export default workflowRouter

@@ -26,8 +26,7 @@ server.errorHandler(() => import('#exceptions/handler'))
 server.use([
   () => import('#middleware/container_bindings_middleware'),
   () => import('#middleware/force_json_response_middleware'),
-  // Commentez la ligne suivante si vous n'avez pas installé @adonisjs/cors
-  // () => import('@adonisjs/cors/cors_middleware'),
+  () => import('@adonisjs/cors/cors_middleware'),
 ])
 
 /**
@@ -47,7 +46,7 @@ export const middleware = router.named({
   auth: () => import('#middleware/auth_middleware'),
   //superAdmin: () => import('#middleware/auth/superAdmin'),
   conseil: () => import('#middleware/auth/conseil'),
-  checkPermission: () => import('#middleware/permissions/checkPermission'),
+  checkPermission: () => import('#middleware/permissions/check_permission'),
 })
 
 // Connexion à Prisma au démarrage

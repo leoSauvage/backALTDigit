@@ -1,5 +1,4 @@
 import prisma from '#lib/prisma'
-import type { Workflow as WorkflowType } from '@prisma/client'
 
 export default class Workflow {
   /**
@@ -8,10 +7,15 @@ export default class Workflow {
    * @param fileName Nom du fichier/dossier associé
    * @param createdById ID de l'utilisateur qui crée le workflow (optionnel)
    */
-  public static async create(name: string, createdById?: string): Promise<WorkflowType> {
+  public static async create(
+    name: string,
+    description: string,
+    createdById?: string
+  ): Promise<WorkflowType> {
     return await prisma.workflow.create({
       data: {
         name,
+        description,
         created_by_id: createdById,
       },
     })
@@ -148,6 +152,20 @@ export default class Workflow {
     })
   }
 
+  public static async updateAttributes(id: string, updates: WorkflowUpdates) {
+    const workflow = await prisma.workflow.findUnique({
+      where: { id },
+    })
+    if (!workflow) {
+      throw new Error('Workflow not found')
+    }
+    const updatedWorkflow = await prisma.workflow.update({
+      where: { id },
+      data: updates, // `updates` contient les champs à modifier
+    })
+
+    return updatedWorkflow
+  }
   /**
    * Supprime un workflow et toutes ses étapes associées
    * @param id ID du workflow à supprimer

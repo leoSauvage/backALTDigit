@@ -7,12 +7,12 @@ export default class WorkflowController {
    */
   public async create({ request, response, auth }: HttpContext) {
     try {
-      const { name } = request.body()
+      const { name, description } = request.body()
 
       // Validation des données
       if (!name) {
         return response.status(400).json({
-          error: 'Name and file_name are required',
+          error: 'Name is required',
         })
       }
 
@@ -25,7 +25,7 @@ export default class WorkflowController {
         // L'utilisateur n'est pas authentifié, on continue sans ID utilisateur
       }
 
-      const workflow = await Workflow.create(name, userId)
+      const workflow = await Workflow.create(name, description, userId)
 
       return response.status(201).json(workflow)
     } catch (error: any) {
@@ -103,6 +103,38 @@ export default class WorkflowController {
     } catch (error: any) {
       return response.status(error.message === 'Workflow not found' ? 404 : 500).json({
         error: error.message || 'Failed to update workflow',
+      })
+    }
+  }
+
+  public async updateAttributes({ request, params, response }: HttpContextContract) {
+    try {
+      // Récupère l'identifiant du workflow depuis l'URL
+      const workflowId = params.id
+
+      // Récupère les données à mettre à jour depuis le corps de la requête
+      const updates = request.only([
+        'name',
+        'description',
+        'file_name',
+        'template_content',
+        'steps',
+        'workflowfield',
+      ])
+
+      // Trouve le workflow à mettre à jour
+      const workflow = await Workflow.updateAttributes(workflowId, updates)
+
+      // Retourne le workflow mis à jour
+      return response.ok({
+        message: 'Workflow mis à jour avec succès',
+        data: workflow,
+      })
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du workflow :', error)
+      return response.status(500).json({
+        message: 'Une erreur est survenue lors de la mise à jour du workflow',
+        error: error.message,
       })
     }
   }

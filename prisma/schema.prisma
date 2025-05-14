@@ -23,10 +23,7 @@ enum FieldType {
   Text              // Texte simple
   LongText          // Texte long (paragraphe)
   Number            // Nombre entier
-  Decimal           // Nombre décimal
-  Boolean           // Vrai/Faux
   Date              // Date
-  DateTime          // Date et heure
   Time              // Heure
   Select            // Sélection unique
   MultiSelect       // Sélection multiple
@@ -41,7 +38,6 @@ enum FieldType {
   Nationality
   TypeOfCompany
   Contact
-
 }
 
 enum Languages {
@@ -185,10 +181,11 @@ model Contract {
 model Workflow {
   id          String   @id @default(uuid())
   name        String
+  description String?
   file_name   String?
   created_by  User?    @relation("CreatedWorkflows", fields: [created_by_id], references: [id])
   created_by_id String?
-  template_content String
+  template_content String?
   created_at  DateTime @default(now())
   updated_at  DateTime @default(now())
   steps       Step[]
@@ -199,26 +196,18 @@ model Step {
   id           String   @id @default(uuid())
   workflow     Workflow @relation(fields: [workflow_id], references: [id])
   workflow_id  String
-  step         Int
   name         String
-  stepActions  StepAction[]
+  action       Action[]
 }
 
 model Action {
   id          String        @id @default(uuid())
+  step        Step @relation(fields: [step_id], references: [id])
+  step_id     String
   type        TypeActions
   config      Json
-  stepActions StepAction[]
-}
-
-model StepAction {
-  id           String    @id @default(uuid())
-  step         Step      @relation(fields: [step_id], references: [id])
-  step_id      String
-  action       Action    @relation(fields: [action_id], references: [id])
-  action_id    String    @unique
-  action_order Int
-  is_required  Boolean   @default(true)
+  order       Int
+  is_required Boolean   @default(true)
 }
 
 model Comment {

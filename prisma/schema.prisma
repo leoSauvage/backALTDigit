@@ -11,12 +11,13 @@ datasource db {
 
 // Proposition d'extension de l'enum TypeActions
 enum TypeActions {
-  EMAIL          // Envoi d'emails
+  ENVOYER_MAIL          // Envoi d'emails
   QUESTIONNAIRE  // Création de formulaires
   VALIDER        // Validation manuelle d'une étape
   SIGNER         // Signature électronique
   GENERER        // Génération de documents
   NOTIFIER   // Notifications in-app
+  AUTRE
 }
 
 enum FieldType {
@@ -144,12 +145,11 @@ model DynamicField {
   created_at        DateTime    @default(now())
   updated_at        DateTime    @updatedAt
 
-  contract          Contract    @relation(fields: [contract_id], references: [id])
-  contract_id       String
+  //contract          Contract    @relation(fields: [contract_id], references: [id])
+  //contract_id       String
   workflow_field    WorkflowField[]
 }
 
-// Lien entre champs et modèles de contrat
 model WorkflowField {
   dynamic_field    DynamicField      @relation(fields: [field_id], references: [id])
   field_id         String
@@ -175,7 +175,7 @@ model Contract {
   archived_at  DateTime?
   comments     Comment[]
   usercontracts  UserContract[]
-  dynamic_field DynamicField[]
+  //dynamic_field DynamicField[]
 }
 
 model Workflow {
@@ -197,6 +197,8 @@ model Step {
   workflow     Workflow @relation(fields: [workflow_id], references: [id])
   workflow_id  String
   name         String
+  description  String?
+  order        Int
   action       Action[]
 }
 

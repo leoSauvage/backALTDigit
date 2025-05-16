@@ -1,610 +1,422 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import pkg from '@prisma/client';
+const { PrismaClient } = pkg;
 const prisma = new PrismaClient();
 
-async function main() {
-  console.log('Starting database seeding...');
+// Define FieldType enum to match your provided interface
+const FieldType = {
+  Text: 'Text',
+  LongText: 'LongText',
+  Number: 'Number',
+  Date: 'Date',
+  Time: 'Time',
+  Select: 'Select',
+  MultiSelect: 'MultiSelect',
+  Radio: 'Radio',
+  Currency: 'Currency',
+  Email: 'Email',
+  Phone: 'Phone',
+  Address: 'Address',
+  File: 'File',
+  Country: 'Country',
+  City: 'City',
+  Nationality: 'Nationality',
+  TypeOfCompany: 'TypeOfCompany',
+  Contact: 'Contact'
+};
 
-  // Create companies
-  const companies = await Promise.all([
-    prisma.company.create({
-      data: {
-        name: 'Acme Corporation',
-        email: 'contact@acme.com'
-      }
-    }),
-    prisma.company.create({
-      data: {
-        name: 'Global Enterprises',
-        email: 'info@globalenterprises.com'
-      }
-    })
-  ]);
-  console.log('Created companies:', companies.length);
+async function seedQuestionnaires() {
+  console.log('Starting questionnaire data seeding...');
 
-  // Create files
-  const files = await Promise.all([
-    prisma.file.create({
-      data: {
-        name: 'Contract Template',
-        location: '/files/templates/contract_v1.docx',
-        company_id: companies[0].id
-      }
-    }),
-    prisma.file.create({
-      data: {
-        name: 'Legal Guidelines',
-        location: '/files/guides/legal_guidelines.pdf',
-        company_id: companies[1].id
-      }
-    })
-  ]);
-  console.log('Created files:', files.length);
+  // First, fetch existing workflows to reference them
+  const standardContractWorkflow = await prisma.workflow.findFirst({
+    where: { name: 'Standard Contract Workflow' }
+  });
 
-  // Create permissions
-  const permissions = await Promise.all([
-    prisma.permission.create({
-      data: {
-        name: 'contract:read'
-      }
-    }),
-    prisma.permission.create({
-      data: {
-        name: 'contract:write'
-      }
-    }),
-    prisma.permission.create({
-      data: {
-        name: 'workflow:manage'
-      }
-    }),
-    prisma.permission.create({
-      data: {
-        name: 'users:manage'
-      }
-    })
-  ]);
-  console.log('Created permissions:', permissions.length);
+  const ndaWorkflow = await prisma.workflow.findFirst({
+    where: { name: 'NDA Process' }
+  });
 
-  // Create roles with permissions
-  const roles = await Promise.all([
-    prisma.role.create({
-      data: {
-        name: 'Admin',
-        permissions: {
-          create: permissions.map(permission => ({
-            permission_id: permission.id
-          }))
-        }
-      }
-    }),
-    prisma.role.create({
-      data: {
-        name: 'User',
-        permissions: {
-          create: [
-            { permission_id: permissions[0].id } // contract:read
-          ]
-        }
-      }
-    }),
-    prisma.role.create({
-      data: {
-        name: 'Manager',
-        permissions: {
-          create: [
-            { permission_id: permissions[0].id }, // contract:read
-            { permission_id: permissions[1].id }, // contract:write
-            { permission_id: permissions[2].id }  // workflow:manage
-          ]
-        }
-      }
-    })
-  ]);
-  console.log('Created roles:', roles.length);
+  if (!standardContractWorkflow || !ndaWorkflow) {
+    console.error('Required workflows not found! Run the main seed script first.');
+    return;
+  }
 
-  // Hash passwords
-  const saltRounds = 10;
-  const password = await bcrypt.hash('Password123', saltRounds);
+  // Fetch the step IDs where we want to attach questionnaires
+  const legalReviewStep = await prisma.step.findFirst({
+    where: {
+      workflow_id: standardContractWorkflow.id,
+      name: 'Legal Review'
+    }
+  });
 
-  // Create users
-  const users = await Promise.all([
-    prisma.user.create({
-      data: {
-        email: 'admin@acme.com',
-        password_hash: password,
-        first_name: 'Admin',
-        last_name: 'User',
-        role_id: roles[0].id,
-        company_id: companies[0].id
-      }
-    }),
-    prisma.user.create({
-      data: {
-        email: 'manager@acme.com',
-        password_hash: password,
-        first_name: 'Manager',
-        last_name: 'User',
-        role_id: roles[2].id,
-        company_id: companies[0].id
-      }
-    }),
-    prisma.user.create({
-      data: {
-        email: 'user@globalenterprises.com',
-        password_hash: password,
-        first_name: 'Regular',
-        last_name: 'User',
-        role_id: roles[1].id,
-        company_id: companies[1].id
-      }
-    })
-  ]);
-  console.log('Created users:', users.length);
+  const ndaReviewStep = await prisma.step.findFirst({
+    where: {
+      workflow_id: ndaWorkflow.id,
+      name: 'NDA Review'
+    }
+  });
 
-  // Create dynamic fields
-  const dynamicFields = await Promise.all([
+  if (!legalReviewStep || !ndaReviewStep) {
+    console.error('Required steps not found! Check step names or run the main seed script first.');
+    return;
+  }
+
+  // Create questionnaire dynamic fields
+  console.log('Creating questionnaire dynamic fields...');
+
+  // Legal Review Questionnaire Fields
+  const legalReviewFields = await Promise.all([
     prisma.dynamicField.create({
       data: {
-        key: 'client_name',
+        key: 'legal_compliance',
         value: '',
-        type: 'Text',
-        description: 'Full legal name of the client',
+        type: FieldType.Select,
+        description: 'Is this contract compliant with our company policies?',
         is_required: true,
-        placeholder: 'Enter client name'
+        placeholder: 'Select compliance status'
       }
     }),
     prisma.dynamicField.create({
       data: {
-        key: 'contract_value',
+        key: 'legal_risks',
         value: '',
-        type: 'Currency',
-        description: 'Total value of the contract',
+        type: FieldType.LongText,
+        description: 'Describe any potential legal risks associated with this contract',
         is_required: true,
-        placeholder: '0.00'
+        placeholder: 'Enter detailed analysis of legal risks'
       }
     }),
     prisma.dynamicField.create({
       data: {
-        key: 'start_date',
+        key: 'recommended_changes',
         value: '',
-        type: 'Date',
-        description: 'Contract start date',
+        type: FieldType.LongText,
+        description: 'List recommended changes to mitigate legal risks',
+        is_required: false,
+        placeholder: 'Enter recommended contract modifications'
+      }
+    }),
+    prisma.dynamicField.create({
+      data: {
+        key: 'jurisdiction_check',
+        value: '',
+        type: FieldType.Country,
+        description: 'Primary legal jurisdiction for this contract',
+        is_required: true,
+        placeholder: 'Select applicable jurisdiction'
+      }
+    }),
+    prisma.dynamicField.create({
+      data: {
+        key: 'legal_approval_date',
+        value: '',
+        type: FieldType.Date,
+        description: 'Date of legal department approval',
+        is_required: true
+      }
+    })
+  ]);
+
+  // NDA Review Questionnaire Fields
+  const ndaReviewFields = await Promise.all([
+    prisma.dynamicField.create({
+      data: {
+        key: 'confidentiality_level',
+        value: '',
+        type: FieldType.Select,
+        description: 'Required level of confidentiality',
+        is_required: true,
+        placeholder: 'Select confidentiality level'
+      }
+    }),
+    prisma.dynamicField.create({
+      data: {
+        key: 'disclosure_scope',
+        value: '',
+        type: FieldType.MultiSelect,
+        description: 'What types of information will be disclosed?',
+        is_required: true,
+        placeholder: 'Select all applicable information types'
+      }
+    }),
+    prisma.dynamicField.create({
+      data: {
+        key: 'duration_years',
+        value: '',
+        type: FieldType.Number,
+        description: 'Duration of confidentiality obligations (in years)',
+        is_required: true,
+        placeholder: 'Enter number of years'
+      }
+    }),
+    prisma.dynamicField.create({
+      data: {
+        key: 'third_party_disclosure',
+        value: '',
+        type: FieldType.Radio,
+        description: 'Will third parties need access to confidential information?',
         is_required: true
       }
     }),
     prisma.dynamicField.create({
       data: {
-        key: 'contract_type',
+        key: 'special_provisions',
         value: '',
-        type: 'Select',
-        description: 'Type of contract',
-        is_required: true
-      }
-    }),
-    prisma.dynamicField.create({
-      data: {
-        key: 'client_address',
-        value: '',
-        type: 'Address',
-        description: 'Client address',
-        is_required: false
+        type: FieldType.LongText,
+        description: 'Any special confidentiality provisions needed',
+        is_required: false,
+        placeholder: 'Describe any special provisions'
       }
     })
   ]);
-  console.log('Created dynamic fields:', dynamicFields.length);
 
-  // Create workflows
-  const workflows = await Promise.all([
-    prisma.workflow.create({
-      data: {
-        name: 'Standard Contract Workflow',
-        description: 'Standard process for contract review and signature',
-        file_name: 'standard_contract_template.docx',
-        created_by_id: users[0].id,
-        template_content: '<p>This is a standard contract template.</p>'
-      }
-    }),
-    prisma.workflow.create({
-      data: {
-        name: 'NDA Process',
-        description: 'Workflow for processing NDAs',
-        file_name: 'nda_template.docx',
-        created_by_id: users[1].id,
-        template_content: '<p>This is a non-disclosure agreement template.</p>'
-      }
-    })
-  ]);
-  console.log('Created workflows:', workflows.length);
+  console.log(`Created ${legalReviewFields.length + ndaReviewFields.length} questionnaire fields`);
 
-  // Associate dynamic fields with workflows
-  await Promise.all([
-    prisma.workflowField.create({
-      data: {
-        field_id: dynamicFields[0].id,
-        workflow_id: workflows[0].id
-      }
-    }),
-    prisma.workflowField.create({
-      data: {
-        field_id: dynamicFields[1].id,
-        workflow_id: workflows[0].id
-      }
-    }),
-    prisma.workflowField.create({
-      data: {
-        field_id: dynamicFields[2].id,
-        workflow_id: workflows[0].id
-      }
-    }),
-    prisma.workflowField.create({
-      data: {
-        field_id: dynamicFields[3].id,
-        workflow_id: workflows[1].id
-      }
-    }),
-    prisma.workflowField.create({
-      data: {
-        field_id: dynamicFields[4].id,
-        workflow_id: workflows[1].id
-      }
-    })
-  ]);
-  console.log('Associated dynamic fields with workflows');
-
-  // Create steps for workflows
-  const steps = await Promise.all([
-    // Steps for Standard Contract Workflow
-    prisma.step.create({
-      data: {
-        workflow_id: workflows[0].id,
-        name: 'Initial Draft',
-        description: 'Create the initial contract draft',
-        order: 1
-      }
-    }),
-    prisma.step.create({
-      data: {
-        workflow_id: workflows[0].id,
-        name: 'Legal Review',
-        description: 'Legal department reviews the contract',
-        order: 2
-      }
-    }),
-    prisma.step.create({
-      data: {
-        workflow_id: workflows[0].id,
-        name: 'Client Review',
-        description: 'Client reviews and suggests changes',
+  // Create questionnaire action configs
+  const legalReviewQuestionnaireConfig = {
+    title: "Legal Department Contract Review",
+    questions: [
+      {
+        id: "q1",
+        question: "Is this contract compliant with our company policies?",
+        description: "Please assess overall compliance with current company guidelines and policies",
+        type: FieldType.Select,
+        fieldKey: legalReviewFields[0].key,
+        isRequired: true,
+        placeholder: "Select an option",
+        order: 1,
+        options: [
+          { label: "Fully Compliant", value: "fully_compliant" },
+          { label: "Mostly Compliant - Minor Issues", value: "mostly_compliant" },
+          { label: "Requires Significant Changes", value: "needs_changes" },
+          { label: "Non-Compliant", value: "non_compliant" }
+        ]
+      },
+      {
+        id: "q2",
+        question: "Describe any potential legal risks associated with this contract",
+        description: "Detail all identified legal risks and their potential impact",
+        type: FieldType.LongText,
+        fieldKey: legalReviewFields[1].key,
+        isRequired: true,
+        placeholder: "Enter detailed risk assessment",
+        order: 2,
+        validation: {
+          minLength: 50,
+          maxLength: 2000
+        }
+      },
+      {
+        id: "q3",
+        question: "List recommended changes to mitigate legal risks",
+        description: "Provide specific recommendations for contract modifications",
+        type: FieldType.LongText,
+        fieldKey: legalReviewFields[2].key,
+        isRequired: false,
+        placeholder: "Enter recommendations",
         order: 3
-      }
-    }),
-    prisma.step.create({
-      data: {
-        workflow_id: workflows[0].id,
-        name: 'Final Approval',
-        description: 'Final approval of the contract',
+      },
+      {
+        id: "q4",
+        question: "Primary legal jurisdiction for this contract",
+        description: "Select the primary jurisdiction where this contract will be enforced",
+        type: FieldType.Country,
+        fieldKey: legalReviewFields[3].key,
+        isRequired: true,
         order: 4
-      }
-    }),
-    prisma.step.create({
-      data: {
-        workflow_id: workflows[0].id,
-        name: 'Signatures',
-        description: 'All parties sign the contract',
+      },
+      {
+        id: "q5",
+        question: "Date of legal department approval",
+        description: "When was this contract approved by the legal department?",
+        type: FieldType.Date,
+        fieldKey: legalReviewFields[4].key,
+        isRequired: true,
         order: 5
       }
-    }),
-    
-    // Steps for NDA Process
-    prisma.step.create({
-      data: {
-        workflow_id: workflows[1].id,
-        name: 'NDA Preparation',
-        description: 'Prepare the NDA document',
-        order: 1
-      }
-    }),
-    prisma.step.create({
-      data: {
-        workflow_id: workflows[1].id,
-        name: 'NDA Review',
-        description: 'Internal review of the NDA',
-        order: 2
-      }
-    }),
-    prisma.step.create({
-      data: {
-        workflow_id: workflows[1].id,
-        name: 'NDA Signing',
-        description: 'Signing of the NDA by all parties',
-        order: 3
-      }
-    })
-  ]);
-  console.log('Created steps:', steps.length);
+    ]
+  };
 
-  // Create actions for steps
-  const actions = await Promise.all([
-    // Actions for Standard Contract Workflow
-    prisma.action.create({
-      data: {
-        step_id: steps[0].id,
-        type: 'GENERER',
-        config: { template: 'standard_contract' },
+  const ndaReviewQuestionnaireConfig = {
+    title: "NDA Requirements Assessment",
+    questions: [
+      {
+        id: "q1",
+        question: "Required level of confidentiality",
+        description: "Select the appropriate confidentiality classification for this NDA",
+        type: FieldType.Select,
+        fieldKey: ndaReviewFields[0].key,
+        isRequired: true,
+        placeholder: "Select confidentiality level",
         order: 1,
-        is_required: true
-      }
-    }),
-    prisma.action.create({
-      data: {
-        step_id: steps[1].id,
-        type: 'QUESTIONNAIRE',
-        config: { questions: ['Is this contract compliant with our policies?', 'Any legal risks?'] },
-        order: 1,
-        is_required: true
-      }
-    }),
-    prisma.action.create({
-      data: {
-        step_id: steps[2].id,
-        type: 'ENVOYER_MAIL',
-        config: { template: 'client_review', recipient: 'client' },
-        order: 1,
-        is_required: true
-      }
-    }),
-    prisma.action.create({
-      data: {
-        step_id: steps[3].id,
-        type: 'VALIDER',
-        config: { approvers: ['legal', 'finance'] },
-        order: 1,
-        is_required: true
-      }
-    }),
-    prisma.action.create({
-      data: {
-        step_id: steps[4].id,
-        type: 'SIGNER',
-        config: { signatories: ['company_representative', 'client_representative'] },
-        order: 1,
-        is_required: true
-      }
-    }),
-    
-    // Actions for NDA Process
-    prisma.action.create({
-      data: {
-        step_id: steps[5].id,
-        type: 'GENERER',
-        config: { template: 'nda_template' },
-        order: 1,
-        is_required: true
-      }
-    }),
-    prisma.action.create({
-      data: {
-        step_id: steps[6].id,
-        type: 'VALIDER',
-        config: { approvers: ['legal'] },
-        order:1,
-        is_required: true
-      }
-    }),
-    prisma.action.create({
-      data: {
-        step_id: steps[7].id,
-        type: 'SIGNER',
-        config: { signatories: ['company_representative', 'partner_representative'] },
-        order: 1,
-        is_required: true
-      }
-    }),
-    prisma.action.create({
-      data: {
-        step_id: steps[7].id,
-        type: 'NOTIFIER',
-        config: { recipients: ['all'], message: 'NDA has been signed' },
+        options: [
+          { label: "Standard", value: "standard" },
+          { label: "Sensitive", value: "sensitive" },
+          { label: "Highly Confidential", value: "highly_confidential" },
+          { label: "Top Secret", value: "top_secret" }
+        ]
+      },
+      {
+        id: "q2",
+        question: "What types of information will be disclosed?",
+        description: "Select all categories of information covered by this NDA",
+        type: FieldType.MultiSelect,
+        fieldKey: ndaReviewFields[1].key,
+        isRequired: true,
+        placeholder: "Select all that apply",
         order: 2,
+        options: [
+          { label: "Financial Data", value: "financial" },
+          { label: "Intellectual Property", value: "ip" },
+          { label: "Business Strategies", value: "strategy" },
+          { label: "Customer Information", value: "customer" },
+          { label: "Technical Specifications", value: "technical" },
+          { label: "Employee Information", value: "employee" },
+          { label: "Research & Development", value: "research" }
+        ]
+      },
+      {
+        id: "q3",
+        question: "Duration of confidentiality obligations (in years)",
+        description: "How many years should the confidentiality obligations remain in effect?",
+        type: FieldType.Number,
+        fieldKey: ndaReviewFields[2].key,
+        isRequired: true,
+        placeholder: "Enter number of years",
+        order: 3,
+        validation: {
+          min: 1,
+          max: 20
+        }
+      },
+      {
+        id: "q4",
+        question: "Will third parties need access to confidential information?",
+        description: "Indicate if third parties will need access to the confidential information",
+        type: FieldType.Radio,
+        fieldKey: ndaReviewFields[3].key,
+        isRequired: true,
+        order: 4,
+        options: [
+          { label: "Yes", value: "yes" },
+          { label: "No", value: "no" }
+        ]
+      },
+      {
+        id: "q5",
+        question: "Any special confidentiality provisions needed",
+        description: "Describe any special provisions or non-standard requirements",
+        type: FieldType.LongText,
+        fieldKey: ndaReviewFields[4].key,
+        isRequired: false,
+        placeholder: "Enter special provisions",
+        order: 5
+      }
+    ]
+  };
+
+  // Update the step actions to include questionnaire configs
+  console.log('Updating step actions with questionnaire configurations...');
+
+  // Find the existing QUESTIONNAIRE action for Legal Review step
+  const legalReviewAction = await prisma.action.findFirst({
+    where: {
+      step_id: legalReviewStep.id,
+      type: 'QUESTIONNAIRE'
+    }
+  });
+
+  if (legalReviewAction) {
+    await prisma.action.update({
+      where: { id: legalReviewAction.id },
+      data: {
+        config: legalReviewQuestionnaireConfig
+      }
+    });
+  } else {
+    // Create new action if not found
+    await prisma.action.create({
+      data: {
+        step_id: legalReviewStep.id,
+        type: 'QUESTIONNAIRE',
+        config: legalReviewQuestionnaireConfig,
+        order: 1,
         is_required: true
       }
-    })
-  ]);
-  console.log('Created actions:', actions.length);
+    });
+  }
 
-  // Create contracts
-  const contracts = await Promise.all([
-    prisma.contract.create({
+  // Create NDA Review questionnaire action
+  await prisma.action.create({
+    data: {
+      step_id: ndaReviewStep.id,
+      type: 'QUESTIONNAIRE',
+      config: ndaReviewQuestionnaireConfig,
+      order: 1,
+      is_required: true
+    }
+  });
+
+  // Sample answers for questionnaires (could be stored as contract data)
+  const sampleLegalReviewAnswers = {
+    legal_compliance: "mostly_compliant",
+    legal_risks: "The contract has some potential issues with the payment terms in section 4.2. The current wording could lead to payment disputes if deliverables are partially completed. Additionally, the liability cap in section 7.1 may be insufficient for the scope of work described.",
+    recommended_changes: "1. Revise section 4.2 to clearly define acceptance criteria for each deliverable\n2. Increase liability cap in section 7.1 from 50% to 100% of contract value\n3. Add more specific dispute resolution procedures in section 9",
+    jurisdiction_check: "FR",
+    legal_approval_date: "2025-05-20"
+  };
+
+  const sampleNdaAnswers = {
+    confidentiality_level: "highly_confidential",
+    disclosure_scope: ["financial", "ip", "strategy", "technical"],
+    duration_years: 5,
+    third_party_disclosure: "no",
+    special_provisions: "Include special handling procedures for technical specifications related to pending patent applications. Require all digital copies to be encrypted with AES-256 encryption."
+  };
+
+  // Create sample completed questionnaires by updating contract data
+  console.log('Creating sample questionnaire responses...');
+
+  // Find the contracts we want to update
+  const standardContract = await prisma.contract.findFirst({
+    where: { title: 'Service Agreement with Acme Corp' }
+  });
+
+  const ndaContract = await prisma.contract.findFirst({
+    where: { title: 'Confidential NDA' }
+  });
+
+  if (standardContract) {
+    await prisma.contract.update({
+      where: { id: standardContract.id },
       data: {
-        title: 'Service Agreement with Acme Corp',
-        status: 'PREPARATION',
-        data: { 
-          client_name: 'Acme Corporation',
-          contract_value: 50000,
-          start_date: '2025-06-01'
-        },
-        language: 'Français',
-        isConfidential: false,
-        created_by_id: users[0].id
-      }
-    }),
-    prisma.contract.create({
-      data: {
-        title: 'Confidential NDA',
-        status: 'NEGOCIATION',
         data: {
-          client_name: 'Global Enterprises',
-          contract_type: 'NDA',
-          start_date: '2025-05-15'
-        },
-        language: 'Anglais',
-        isConfidential: true,
-        created_by_id: users[1].id
-      }
-    })
-  ]);
-  console.log('Created contracts:', contracts.length);
-
-  // Associate users with contracts
-  await Promise.all([
-    prisma.userContract.create({
-      data: {
-        user_id: users[0].id,
-        contract_id: contracts[0].id,
-        droit: 'EDITOR'
-      }
-    }),
-    prisma.userContract.create({
-      data: {
-        user_id: users[1].id,
-        contract_id: contracts[0].id,
-        droit: 'COMMENTATOR'
-      }
-    }),
-    prisma.userContract.create({
-      data: {
-        user_id: users[1].id,
-        contract_id: contracts[1].id,
-        droit: 'EDITOR'
-      }
-    }),
-    prisma.userContract.create({
-      data: {
-        user_id: users[2].id,
-        contract_id: contracts[1].id,
-        droit: 'COMMENTATOR'
-      }
-    })
-  ]);
-  console.log('Associated users with contracts');
-
-  // Create comments
-  const comments = await Promise.all([
-    prisma.comment.create({
-      data: {
-        contract_id: contracts[0].id,
-        commented_by_id: users[1].id,
-        comment: 'We should review the payment terms in section 3.',
-        position: 1
-      }
-    }),
-    prisma.comment.create({
-      data: {
-        contract_id: contracts[0].id,
-        commented_by_id: users[0].id,
-        comment: 'I agree, let\'s update that section.',
-        position: 2
-      }
-    }),
-    prisma.comment.create({
-      data: {
-        contract_id: contracts[1].id,
-        commented_by_id: users[1].id,
-        comment: 'The confidentiality clause needs to be stronger.',
-        position: 1
-      }
-    })
-  ]);
-  console.log('Created comments:', comments.length);
-
-  // Create notifications
-  const notifications = await Promise.all([
-    prisma.notification.create({
-      data: {
-        user_id: users[0].id,
-        type: 'CONTRACT_COMMENT',
-        payload: { 
-          contract_id: contracts[0].id, 
-          comment_id: comments[0].id,
-          message: 'New comment on Service Agreement'
+          ...standardContract.data,
+          questionnaire_legal_review: sampleLegalReviewAnswers
         }
       }
-    }),
-    prisma.notification.create({
+    });
+  }
+
+  if (ndaContract) {
+    await prisma.contract.update({
+      where: { id: ndaContract.id },
       data: {
-        user_id: users[1].id,
-        type: 'CONTRACT_UPDATED',
-        payload: { 
-          contract_id: contracts[0].id,
-          message: 'Service Agreement has been updated'
+        data: {
+          ...ndaContract.data,
+          questionnaire_nda_review: sampleNdaAnswers
         }
       }
-    }),
-    prisma.notification.create({
-      data: {
-        user_id: users[2].id,
-        type: 'CONTRACT_SHARED',
-        payload: { 
-          contract_id: contracts[1].id,
-          message: 'Confidential NDA has been shared with you'
-        }
-      }
-    })
-  ]);
-  console.log('Created notifications:', notifications.length);
+    });
+  }
 
-  // Create tickets
-  const tickets = await Promise.all([
-    prisma.ticket.create({
-      data: {
-        title: 'Issue with contract generation',
-        content: 'I\'m having trouble generating a contract from the template.',
-        user_id: users[0].id,
-        company_id: companies[0].id
-      }
-    }),
-    prisma.ticket.create({
-      data: {
-        title: 'Need assistance with workflow',
-        content: 'Can someone help me set up a custom workflow for our partnership agreements?',
-        user_id: users[1].id,
-        company_id: companies[0].id
-      }
-    }),
-    prisma.ticket.create({
-      data: {
-        title: 'Access issue',
-        content: 'I can\'t access the contracts I\'m supposed to review.',
-        user_id: users[2].id,
-        company_id: companies[1].id
-      }
-    })
-  ]);
-  console.log('Created tickets:', tickets.length);
-
-  // Create settings
-  const settings = await Promise.all([
-    prisma.setting.create({
-      data: {
-        key: 'email_notifications',
-        value: { enabled: true, digest: 'daily' }
-      }
-    }),
-    prisma.setting.create({
-      data: {
-        key: 'default_language',
-        value: { language: 'Français' }
-      }
-    }),
-    prisma.setting.create({
-      data: {
-        key: 'security',
-        value: { 
-          password_expiry_days: 90,
-          two_factor_auth: true,
-          session_timeout_minutes: 30
-        }
-      }
-    })
-  ]);
-
-  console.log('Database seeding completed successfully!');
+  console.log('Questionnaire data seeding completed successfully!');
 }
 
-main()
+// Run the seeding function
+seedQuestionnaires()
   .catch((e) => {
-    console.error('Error during seeding:', e);
+    console.error('Error during questionnaire seeding:', e);
     process.exit(1);
   })
   .finally(async () => {

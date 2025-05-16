@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "db": "npx prisma db push && node prisma/seed.js"
+    "db": "npx prisma db push && node prisma/seed.js",
+    "seed": "node prisma/seed.js"
   },
   "imports": {
     "#controllers/*": "./app/controllers/*.js",
@@ -58,7 +59,7 @@
     "@adonisjs/core": "^6.17.2",
     "@adonisjs/cors": "^2.2.1",
     "@adonisjs/lucid": "^21.6.0",
-    "@prisma/client": "^6.8.0",
+    "@prisma/client": "^6.8.1",
     "@vinejs/vine": "^3.0.0",
     "bcrypt": "^5.1.1",
     "luxon": "^3.6.1",

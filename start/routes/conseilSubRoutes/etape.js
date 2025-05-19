@@ -6,7 +6,7 @@ const etapeRouter = router
     router.get('/workflows/:workflow_id/steps', '#controllers/Conseil/etape.getByWorkflow')
 
     // Créer une nouvelle étape
-    router.post('/steps', '#controllers/Conseil/etape.create')
+    router.post('/steps/:id', '#controllers/Conseil/etape.create')
 
     // Récupérer une étape spécifique
     router.get('/steps/:id', '#controllers/Conseil/etape.show')

@@ -70,10 +70,37 @@ export default class Workflow {
    * @param id ID du workflow
    * @param includeSteps Si true, inclut les étapes associées
    */
-  public static async findById(id: string, includeSteps: boolean = false) {
-    return await prisma.workflow.findUnique({
-      where: { id },
+  public static async findById(id: string) {
+    // Get the workflow with all its steps and actions in a single query
+    const workflow = await prisma.workflow.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        steps: {
+          orderBy: {
+            order: 'asc',
+          },
+          include: {
+            action: {
+              orderBy: {
+                order: 'asc',
+              },
+            },
+          },
+        },
+        workflowfield: {
+          include: {
+            dynamic_field: true,
+          },
+        },
+      },
     })
+
+    if (!workflow) {
+      throw new Error(`Workflow with ID ${id} not found`)
+    }
+    return workflow
   }
   /**
    * Retourne l'ID du workflow auquel appartient l'action donnée.
@@ -110,7 +137,7 @@ export default class Workflow {
       case 'Notification':
         return TypeActions.NOTIFIER
       case 'Email':
-        return TypeActions.EMAIL
+        return TypeActions.ENVOYER_MAIL
       case 'Génération':
         return TypeActions.GENERER
       case 'Signature':
@@ -142,7 +169,7 @@ export default class Workflow {
     // Utiliser une transaction pour la mise à jour
     return await prisma.$transaction(async (tx) => {
       // 1. Mettre à jour le workflow principal
-      const workflow = await tx.workflow.update({
+      await tx.workflow.update({
         where: { id },
         data: {
           ...workflowData,
@@ -181,88 +208,66 @@ export default class Workflow {
 
         // 2.4 Traiter chaque étape fournie
         for (const step of steps) {
-          const { actions, id: stepId, ...stepData } = step
+          const { actions = [], id: stepId, ...stepData } = step
 
           if (stepId && existingStepIds.includes(stepId)) {
-            // Mettre à jour une étape existante
+            // Définir un type explicite pour action
+            const action: {
+              update?: any[]
+              create?: any[]
+              deleteMany?: any
+            } = {}
+
+            // Préparer les mises à jour
+            if (actions.some((a) => a.id && typeof a.id === 'number')) {
+              action.update = actions
+                .filter((a) => a.id && typeof a.id === 'number')
+                .map((a) => ({ where: { id: a.id }, data: { ...a, id: undefined } }))
+            }
+
+            // Préparer les créations
+            if (actions.some((a) => !a.id || typeof a.id !== 'number')) {
+              action.create = actions
+                .filter((a) => !a.id || typeof a.id !== 'number')
+                .map((a) => ({ ...a, id: undefined }))
+            }
+
+            // Préparer les suppressions
+            const keepIds = actions.filter((a) => a.id).map((a) => a.id)
+            if (keepIds.length > 0) {
+              action.deleteMany = { step_id: stepId, id: { notIn: keepIds } }
+            }
+
+            // Mise à jour en une seule opération
             await tx.step.update({
               where: { id: stepId },
-              data: stepData,
+              data: { ...stepData, action },
             })
-
-            // Traiter les actions de cette étape
-            if (actions && Array.isArray(actions)) {
-              // 2.4.1 Obtenir les IDs des actions existantes pour cette étape
-              const existingActions = await tx.action.findMany({
-                where: { step_id: stepId },
-                select: { id: true },
-              })
-              const existingActionIds = existingActions.map((action) => action.id)
-
-              // 2.4.2 Déterminer quelles actions garder
-              const actionIdsToKeep = actions
-                .filter((action) => action.id)
-                .map((action) => action.id)
-
-              // 2.4.3 Supprimer les actions qui ne sont plus présentes
-              const actionIdsToDelete = existingActionIds.filter(
-                (actionId) => !actionIdsToKeep.includes(actionId)
-              )
-
-              if (actionIdsToDelete.length > 0) {
-                await tx.action.deleteMany({
-                  where: {
-                    id: { in: actionIdsToDelete },
-                  },
-                })
-              }
-
-              // 2.4.4 Mettre à jour ou créer chaque action
-              for (const action of actions) {
-                const { id: actionId, ...actionData } = action
-
-                if (actionId && existingActionIds.includes(actionId)) {
-                  // Mettre à jour une action existante
-                  await tx.action.update({
-                    where: { id: actionId },
-                    data: actionData,
-                  })
-                } else {
-                  // Créer une nouvelle action
-                  await tx.action.create({
-                    data: {
-                      ...actionData,
-                      step_id: stepId,
-                    },
-                  })
-                }
-              }
-            }
           } else {
-            // Créer une nouvelle étape
-            const newStep = await tx.step.create({
+            await tx.step.create({
               data: {
                 ...stepData,
                 workflow: {
                   connect: { id },
                 },
+                // Création des actions imbriquées en une seule requête
+                action:
+                  actions && Array.isArray(actions)
+                    ? {
+                        create: await Promise.all(
+                          actions.map(async (action) => {
+                            const { id: _, ...actionData } = action
+                            const typeAction = await Workflow.typeActionSwitch(actionData.type)
+                            return {
+                              ...actionData,
+                              type: typeAction,
+                            }
+                          })
+                        ),
+                      }
+                    : undefined,
               },
             })
-
-            // Créer les actions pour cette nouvelle étape
-            if (actions && Array.isArray(actions)) {
-              for (const action of actions) {
-                const { id: _, ...actionData } = action
-                const typeAction = await Workflow.typeActionSwitch(actionData.type)
-                actionData.type = typeAction
-                await tx.action.create({
-                  data: {
-                    ...actionData,
-                    step_id: newStep.id,
-                  },
-                })
-              }
-            }
           }
         }
       }

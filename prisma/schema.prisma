@@ -167,6 +167,7 @@ model Contract {
   title        String
   status       Status
   data         Json
+  file_list    String
   language     Languages
   isConfidential Boolean 
   created_by_id String?   //User.id
@@ -182,10 +183,9 @@ model Workflow {
   id          String   @id @default(uuid())
   name        String
   description String?
-  file_name   String?
   created_by  User?    @relation("CreatedWorkflows", fields: [created_by_id], references: [id])
   created_by_id String?
-  template_content String?
+  template_path String?
   created_at  DateTime @default(now())
   updated_at  DateTime @default(now())
   steps       Step[]

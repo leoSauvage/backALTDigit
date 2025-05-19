@@ -59,12 +59,11 @@ export default class WorkflowController {
   /**
    * Récupérer un workflow par son ID
    */
-  public async show({ params, request, response }: HttpContext) {
+  public async show({ params, response }: HttpContext) {
     try {
       const { id } = params
-      const includeSteps = request.input('includeSteps', false)
 
-      const workflow = await Workflow.findById(id, includeSteps === 'true' || includeSteps === true)
+      const workflow = await Workflow.findById(id)
 
       if (!workflow) {
         return response.status(404).json({ error: 'Workflow not found' })

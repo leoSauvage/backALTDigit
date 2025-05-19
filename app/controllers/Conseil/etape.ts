@@ -5,11 +5,12 @@ export default class StepController {
   /**
    * Créer une nouvelle étape dans un workflow
    */
-  public async create({ request, response }: HttpContext) {
+  public async create({ params, request, response }: HttpContext) {
     try {
-      const { workflow_id, name, step } = request.body()
+      const { id } = params
+      const { name, step } = request.body()
 
-      const newStep = await Step.create(workflow_id, name, step)
+      const newStep = await Step.create(id, name, step)
 
       return response.status(201).json(newStep)
     } catch (error: any) {

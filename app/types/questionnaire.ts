@@ -5,8 +5,9 @@ export interface QuestionConfig {
   question: string
   description?: string
   type: FieldType
-  fieldKey: string // Identifiant technique pour le DynamicField
+  variable: string
   isRequired: boolean
+  default?: string
   placeholder?: string
   order: number
   options?: { label: string; value: string }[] // Pour Select et MultiSelect

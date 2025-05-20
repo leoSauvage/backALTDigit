@@ -254,4 +254,35 @@ export default class QuestionnaireModel {
 
     return updatedQuestions
   }
+
+  /**
+   * Récupère la variable et le type de réponse d'un questionnaire
+   */
+  public static async getQuestionnaireConfig(workflowId: string) {
+    const questionnaireActions = await prisma.action.findMany({
+      where: {
+        step: {
+          workflow_id: workflowId,
+        },
+        type: 'QUESTIONNAIRE',
+      },
+    })
+    const questionData = []
+    for (const action of questionnaireActions) {
+      const config: any = action.config
+      if (!config || !Array.isArray(config.questions)) {
+        continue
+      }
+      for (const question of config.questions) {
+        // Vérifier si la question contient une variable et un type, puis les stocker
+        if (question.variable && question.type) {
+          questionData.push({
+            variable: question.variable,
+            type: question.type,
+          })
+        }
+      }
+    }
+    return questionData
+  }
 }

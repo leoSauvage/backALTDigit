@@ -20,26 +20,25 @@ enum TypeActions {
   AUTRE
 }
 
-enum FieldType {
-  Text              // Texte simple
-  LongText          // Texte long (paragraphe)
-  Number            // Nombre entier
-  Date              // Date
-  Time              // Heure
-  Select            // Sélection unique
-  MultiSelect       // Sélection multiple
-  Radio
-  Currency          // Montant avec devise
-  Email             // Adresse email
-  Phone             // Numéro de téléphone
-  Address           // Adresse complète
-  File              // Pièce jointe
-  Country
-  City
-  Nationality
-  TypeOfCompany
-  Contact
-}
+  enum FieldType {
+    Text              // Texte simple
+    LongText          // Texte long (paragraphe)
+    Number            // Nombre entier
+    Date              // Date
+    Time              // Heure
+    Select            // Sélection unique
+    MultiSelect       // Sélection multiple
+    Radio
+    Currency          // Montant avec devise
+    Email             // Adresse email
+    Phone             // Numéro de téléphone
+    Adress           // Adresse complète
+    File              // Pièce jointe
+    Country
+    Nationality
+    TypeOfCompany
+    Contact
+  }
 
 enum Languages {
   Français
@@ -132,31 +131,6 @@ model UserContract {
   @@id([user_id, contract_id])
   droit Rights
 }
-//Dynnamic fields
-// Modèle pour définir les champs dynamiques
-model DynamicField {
-  id                String      @id @default(uuid()) 
-  key               String      // Identifiant technique du champ
-  value             String 
-  type              FieldType   // Type de champ
-  description       String?     // Description/aide pour le champ
-  is_required       Boolean     @default(false)
-  placeholder       String?     // Texte d'exemple
-  created_at        DateTime    @default(now())
-  updated_at        DateTime    @updatedAt
-
-  //contract          Contract    @relation(fields: [contract_id], references: [id])
-  //contract_id       String
-  workflow_field    WorkflowField[]
-}
-
-model WorkflowField {
-  dynamic_field    DynamicField      @relation(fields: [field_id], references: [id])
-  field_id         String
-  workflow         Workflow          @relation(fields: [workflow_id], references: [id])
-  workflow_id      String
-  @@id([field_id, workflow_id])
-}
 
 
 
@@ -177,6 +151,28 @@ model Contract {
   comments     Comment[]
   usercontracts  UserContract[]
   //dynamic_field DynamicField[]
+}
+//Dynnamic fields
+// Modèle pour définir les champs dynamiques
+model DynamicField {
+  id                String      @id @default(uuid()) 
+  key               String      // Identifiant technique du champ
+  value             String
+  type              FieldType   
+  created_at        DateTime    @default(now())
+  updated_at        DateTime    @updatedAt
+
+  //contract          Contract    @relation(fields: [contract_id], references: [id])
+  //contract_id       String
+  workflow_field    WorkflowField[]
+}
+
+model WorkflowField {
+  dynamic_field    DynamicField      @relation(fields: [field_id], references: [id])
+  field_id         String
+  workflow         Workflow          @relation(fields: [workflow_id], references: [id])
+  workflow_id      String
+  @@id([field_id, workflow_id])
 }
 
 model Workflow {

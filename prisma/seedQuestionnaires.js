@@ -1,27 +1,25 @@
 import pkg from '@prisma/client'
 const { PrismaClient, FieldType, TypeActions, Status, Languages } = pkg
 const prisma = new PrismaClient()
-  //Commande :=> node prisma/seedQuestionnaires.js
-  async function createQuestionnairesForStep(stepId, configs) {
-    console.log(`Creating questionnaires for step ${stepId}...`)
+//Commande :=> node prisma/seedQuestionnaires.js
+async function createQuestionnairesForStep(stepId, configs) {
+  console.log(`Creating questionnaires for step ${stepId}...`)
 
-    // Créer 3 actions de type QUESTIONNAIRE pour chaque étape
-    await Promise.all(
-      configs.map((config, index) => {
-        return prisma.action.create({
-          data: {
-            step_id: stepId,
-            type: TypeActions.QUESTIONNAIRE,
-            config: config,
-            order: index + 1,
-            is_required: true,
-          },
-        })
+  // Créer 3 actions de type QUESTIONNAIRE pour chaque étape
+  await Promise.all(
+    configs.map((config, index) => {
+      return prisma.action.create({
+        data: {
+          step_id: stepId,
+          type: TypeActions.QUESTIONNAIRE,
+          config: config,
+          order: index + 1,
+          is_required: true,
+        },
       })
-    )
-  }
-
-
+    })
+  )
+}
 
 async function main() {
   console.log('Starting seed script...')
@@ -300,8 +298,6 @@ async function main() {
     },
   })
 
-
-
   // Additional sample contracts
   const consultingContract = await prisma.contract.upsert({
     where: { id: 'consulting-contract-1' },
@@ -347,39 +343,39 @@ async function seedQuestionnaires() {
 
   const draftStep = await prisma.step.findFirst({
     where: {
-      name: 'Draft Contract'
-    }
-  });
+      name: 'Draft Contract',
+    },
+  })
 
   const legalReviewStep = await prisma.step.findFirst({
     where: {
-      name: 'Legal Review'
-    }
-  });
+      name: 'Legal Review',
+    },
+  })
 
   const approvalStep = await prisma.step.findFirst({
     where: {
-      name: 'Final Approval'
-    }
-  });
+      name: 'Final Approval',
+    },
+  })
 
   const ndaDraftStep = await prisma.step.findFirst({
     where: {
-      name: 'Draft NDA'
-    }
-  });
+      name: 'Draft NDA',
+    },
+  })
 
   const ndaReviewStep = await prisma.step.findFirst({
     where: {
-      name: 'NDA Review'
-    }
-  });
+      name: 'NDA Review',
+    },
+  })
 
   const ndaSignatureStep = await prisma.step.findFirst({
     where: {
-      name: 'NDA Signature'
-    }
-  });
+      name: 'NDA Signature',
+    },
+  })
 
   // Vérification que toutes les étapes ont été trouvées
   const requiredSteps = [
@@ -388,12 +384,14 @@ async function seedQuestionnaires() {
     approvalStep,
     ndaDraftStep,
     ndaReviewStep,
-    ndaSignatureStep
-  ];
+    ndaSignatureStep,
+  ]
 
-  if (requiredSteps.some(step => !step)) {
-    console.error('Some required steps were not found! Check step names or run the main seed script first.');
-    return;
+  if (requiredSteps.some((step) => !step)) {
+    console.error(
+      'Some required steps were not found! Check step names or run the main seed script first.'
+    )
+    return
   }
 
   // First, fetch existing workflows to reference them
@@ -420,150 +418,149 @@ async function seedQuestionnaires() {
 
   const draftStepConfigs = [
     {
-      title: "Initial Draft Requirements",
+      title: 'Initial Draft Requirements',
       questions: [
         {
-          id: "d1",
-          question: "Contract Type Selection",
+          id: 'd1',
+          question: 'Contract Type Selection',
           type: FieldType.Select,
-          fieldKey: "contract_type",
+          fieldKey: 'contract_type',
           isRequired: true,
           order: 1,
           options: [
-            { label: "Service Agreement", value: "service" },
-            { label: "License Agreement", value: "license" },
-            { label: "Partnership Agreement", value: "partnership" }
-          ]
-        }
-      ]
+            { label: 'Service Agreement', value: 'service' },
+            { label: 'License Agreement', value: 'license' },
+            { label: 'Partnership Agreement', value: 'partnership' },
+          ],
+        },
+      ],
     },
     {
-      title: "Contract Parties Information",
+      title: 'Contract Parties Information',
       questions: [
         {
-          id: "d2",
-          question: "Counterparty Details",
+          id: 'd2',
+          question: 'Counterparty Details',
           type: FieldType.Text,
-          fieldKey: "counterparty_info",
+          fieldKey: 'counterparty_info',
           isRequired: true,
-          order: 1
-        }
-      ]
+          order: 1,
+        },
+      ],
     },
     {
-      title: "Contract Terms",
+      title: 'Contract Terms',
       questions: [
         {
-          id: "d3",
-          question: "Contract Duration",
+          id: 'd3',
+          question: 'Contract Duration',
           type: FieldType.Number,
-          fieldKey: "duration_months",
+          fieldKey: 'duration_months',
           isRequired: true,
-          order: 1
-        }
-      ]
-    }
-  ];
+          order: 1,
+        },
+      ],
+    },
+  ]
 
   const approvalStepConfigs = [
     {
-      title: "Business Approval",
+      title: 'Business Approval',
       questions: [
         {
-          id: "a1",
-          question: "Business Impact Assessment",
+          id: 'a1',
+          question: 'Business Impact Assessment',
           type: FieldType.LongText,
-          fieldKey: "business_impact",
+          fieldKey: 'business_impact',
           isRequired: true,
-          order: 1
-        }
-      ]
+          order: 1,
+        },
+      ],
     },
     {
-      title: "Financial Approval",
+      title: 'Financial Approval',
       questions: [
         {
-          id: "a2",
-          question: "Budget Validation",
+          id: 'a2',
+          question: 'Budget Validation',
           type: FieldType.Currency,
-          fieldKey: "budget_validation",
+          fieldKey: 'budget_validation',
           isRequired: true,
-          order: 1
-        }
-      ]
+          order: 1,
+        },
+      ],
     },
     {
-      title: "Risk Assessment",
+      title: 'Risk Assessment',
       questions: [
         {
-          id: "a3",
-          question: "Risk Level Evaluation",
+          id: 'a3',
+          question: 'Risk Level Evaluation',
           type: FieldType.Select,
-          fieldKey: "risk_level",
+          fieldKey: 'risk_level',
           isRequired: true,
           order: 1,
           options: [
-            { label: "Low Risk", value: "low" },
-            { label: "Medium Risk", value: "medium" },
-            { label: "High Risk", value: "high" }
-          ]
-        }
-      ]
-    }
-  ];
+            { label: 'Low Risk', value: 'low' },
+            { label: 'Medium Risk', value: 'medium' },
+            { label: 'High Risk', value: 'high' },
+          ],
+        },
+      ],
+    },
+  ]
 
   const signatureStepConfigs = [
     {
-      title: "Signature Authorization",
+      title: 'Signature Authorization',
       questions: [
         {
-          id: "s1",
-          question: "Signatory Information",
+          id: 's1',
+          question: 'Signatory Information',
           type: FieldType.Text,
-          fieldKey: "signatory_info",
+          fieldKey: 'signatory_info',
           isRequired: true,
-          order: 1
-        }
-      ]
+          order: 1,
+        },
+      ],
     },
     {
-      title: "Signature Method",
+      title: 'Signature Method',
       questions: [
         {
-          id: "s2",
-          question: "Preferred Signature Method",
+          id: 's2',
+          question: 'Preferred Signature Method',
           type: FieldType.Select,
-          fieldKey: "signature_method",
+          fieldKey: 'signature_method',
           isRequired: true,
           order: 1,
           options: [
-            { label: "Electronic", value: "electronic" },
-            { label: "Physical", value: "physical" }
-          ]
-        }
-      ]
+            { label: 'Electronic', value: 'electronic' },
+            { label: 'Physical', value: 'physical' },
+          ],
+        },
+      ],
     },
     {
-      title: "Signature Validation",
+      title: 'Signature Validation',
       questions: [
         {
-          id: "s3",
-          question: "Authority Verification",
+          id: 's3',
+          question: 'Authority Verification',
           type: FieldType.Radio,
-          fieldKey: "authority_verified",
+          fieldKey: 'authority_verified',
           isRequired: true,
           order: 1,
           options: [
-            { label: "Verified", value: "yes" },
-            { label: "Not Verified", value: "no" }
-          ]
-        }
-      ]
-    }
-  ];
+            { label: 'Verified', value: 'yes' },
+            { label: 'Not Verified', value: 'no' },
+          ],
+        },
+      ],
+    },
+  ]
 
   // Créer les actions pour chaque étape
-
 
   // Legal Review Questionnaire Fields
   const legalReviewFields = await Promise.all([
@@ -838,9 +835,6 @@ async function seedQuestionnaires() {
     ],
   }
 
-
-
-
   // Update the step actions to include questionnaire configs
   console.log('Updating step actions with questionnaire configurations...')
 
@@ -902,16 +896,22 @@ async function seedQuestionnaires() {
 
   const steps = [
     { id: draftStep.id, configs: draftStepConfigs },
-    { id: legalReviewStep.id, configs: [legalReviewQuestionnaireConfig, ...approvalStepConfigs.slice(0, 2)] },
+    {
+      id: legalReviewStep.id,
+      configs: [legalReviewQuestionnaireConfig, ...approvalStepConfigs.slice(0, 2)],
+    },
     { id: approvalStep.id, configs: approvalStepConfigs },
     { id: ndaDraftStep.id, configs: draftStepConfigs },
-    { id: ndaReviewStep.id, configs: [ndaReviewQuestionnaireConfig, ...approvalStepConfigs.slice(0, 2)] },
-    { id: ndaSignatureStep.id, configs: signatureStepConfigs }
-  ];
+    {
+      id: ndaReviewStep.id,
+      configs: [ndaReviewQuestionnaireConfig, ...approvalStepConfigs.slice(0, 2)],
+    },
+    { id: ndaSignatureStep.id, configs: signatureStepConfigs },
+  ]
 
   // Créer les actions pour toutes les étapes
   for (const step of steps) {
-    await createQuestionnairesForStep(step.id, step.configs);
+    await createQuestionnairesForStep(step.id, step.configs)
   }
 
   // Sample answers for questionnaires (could be stored as contract data)

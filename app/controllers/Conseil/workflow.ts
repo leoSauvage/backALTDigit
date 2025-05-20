@@ -64,7 +64,6 @@ export default class WorkflowController {
       const { id } = params
 
       const workflow = await Workflow.findById(id)
-
       if (!workflow) {
         return response.status(404).json({ error: 'Workflow not found' })
       }
@@ -85,8 +84,18 @@ export default class WorkflowController {
     try {
       const workflowId = params.id
       const workflowData = request.all()
-      // Valider les données
-      // Utiliser le service pour mettre à jour le workflow
+
+      if (Array.isArray(workflowData.steps)) {
+        workflowData.steps = workflowData.steps.map((step: any) => {
+          if (Array.isArray(step.action)) {
+            step.action = step.action.map((actionItem: any) => {
+              const { step_id, ...rest } = actionItem
+              return rest
+            })
+          }
+          return step
+        })
+      }
       const workflow = await Workflow.updateWorkflow(workflowId, workflowData)
       return response.json({
         message: 'Workflow mis à jour avec succès',

@@ -1,5 +1,5 @@
 import prisma from '#lib/prisma'
-import { WorkflowField } from '@prisma/client'
+import { FieldType, WorkflowField } from '@prisma/client'
 
 export default class DynamicField {
   /**
@@ -54,11 +54,82 @@ export default class DynamicField {
    * @param data - Les données à mettre à jour
    * @returns Le champ dynamique mis à jour
    */
-  public static async updateField(id: string, data: Partial<DynamicField>): Promise<DynamicField> {
-    return prisma.dynamicField.update({
-      where: { id },
-      data,
-    })
+  public static async updateField(
+    questionData: Array<{ variable: string; type: string }> = [],
+    workflowId: string
+  ) {
+    if (questionData.length > 0) {
+      for (const data of questionData) {
+        // Vérifier l'existence d'un dynamicField pour cette variable
+        let existingField = await prisma.dynamicField.findFirst({
+          where: {
+            key: data.variable,
+            workflow_field: {
+              some: {
+                workflow_id: workflowId,
+              },
+            },
+          },
+        })
+        if (!existingField) {
+          // Créer un nouveau champ
+          const fieldType = await DynamicField.getFieldTypeFromString(data.type)
+          existingField = await prisma.dynamicField.create({
+            data: {
+              key: data.variable,
+              value: '',
+              type: fieldType,
+            },
+          })
+        }
+        // Vérifier si on a déjà workflowField qui relie ce champ au workflow
+        const existingRelation = await prisma.workflowField.findUnique({
+          where: {
+            field_id_workflow_id: {
+              field_id: existingField.id,
+              workflow_id: workflowId,
+            },
+          },
+        })
+        // Si non relié encore, on crée le lien
+        if (!existingRelation) {
+          await prisma.workflowField.create({
+            data: {
+              workflow_id: workflowId,
+              field_id: existingField.id,
+            },
+          })
+        }
+      }
+    }
+  }
+
+  /**
+   * Retourne la valeur de FieldType correspondante
+   * à la chaîne d'entrée. Si aucune correspondance
+   * n'est trouvée, on renvoie FieldType.Text par défaut.
+   */
+  public static async getFieldTypeFromString(input: string): Promise<FieldType> {
+    const fieldTypeMap: Record<string, FieldType> = {
+      'Text': FieldType.Text,
+      'Long Text': FieldType.LongText,
+      'Number': FieldType.Number,
+      'Date': FieldType.Date,
+      'Temps': FieldType.Time,
+      'Select': FieldType.Select,
+      'Multi Select': FieldType.MultiSelect,
+      'Radio': FieldType.Radio,
+      'Currency': FieldType.Currency,
+      'Email': FieldType.Email,
+      'Phone': FieldType.Phone,
+      'Adress': FieldType.Address,
+      'File': FieldType.File,
+      'Country': FieldType.Country,
+      'Nationalité': FieldType.Nationality,
+      'Company': FieldType.TypeOfCompany,
+      'Contact': FieldType.Contact,
+    }
+    return fieldTypeMap[input] ?? FieldType.Text
   }
 
   /**

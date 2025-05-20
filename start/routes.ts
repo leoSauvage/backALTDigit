@@ -1,9 +1,10 @@
-import router from '@adonisjs/core/services/router'
-
+import { default as Route, default as router } from '@adonisjs/core/services/router'
 // Importer les sous-routes
 import './routes/conseilSubRoutes/Actions/questionnaire.js'
 import './routes/conseilSubRoutes/etape.js'
 import './routes/conseilSubRoutes/workflow.js'
+
+// const AdminCompagniesController = () => import('#controllers/admin_compagnies_controller');
 
 // Route de test pour l'API
 router.get('/api/test', async ({ response }) => {
@@ -11,6 +12,12 @@ router.get('/api/test', async ({ response }) => {
 })
 
 // Wildcard route pour le frontend SPA (à ajouter en dernier)
-router.get('*', async ({ response }) => {
-  return response.json('test')
-})
+// Route.get('*', async ({ response }) => {
+//   return response.json('test')
+// })
+
+// Entreprise
+Route.get('/api/contract-all', '#controllers/admin_compagnies_controller.contractList')
+Route.get('/api/contact-steps/:id', '#controllers/admin_compagnies_controller.contractSteps')
+Route.get('/api/init-contract/:workflowId', '#controllers/admin_compagnies_controller.initContract')
+Route.get('/api/get-step-action/:id', '#controllers/admin_compagnies_controller.initContract')

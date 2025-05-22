@@ -11,12 +11,12 @@ datasource db {
 
 // Proposition d'extension de l'enum TypeActions
 enum TypeActions {
-  ENVOYER_MAIL          // Envoi d'emails
-  QUESTIONNAIRE  // Création de formulaires
-  VALIDER        // Validation manuelle d'une étape
-  SIGNER         // Signature électronique
-  GENERER        // Génération de documents
-  NOTIFIER   // Notifications in-app
+  ENVOYER_MAIL // Envoi d'emails
+  QUESTIONNAIRE // Création de formulaires
+  VALIDER // Validation manuelle d'une étape
+  SIGNER // Signature électronique
+  GENERER // Génération de documents
+  NOTIFIER // Notifications in-app
   AUTRE
 }
 
@@ -69,51 +69,50 @@ model Company {
 }
 
 model File {
-  id       String  @id @default(uuid())
-  name     String  @unique
-  location String  @unique
-  company        Company     @relation(fields: [company_id], references: [id])
-  company_id     String
+  id         String  @id @default(uuid())
+  name       String  @unique
+  location   String  @unique
+  company    Company @relation(fields: [company_id], references: [id])
+  company_id String
 }
 
 model Role {
-  id          String             @id @default(uuid())
-  name        String             @unique
+  id          String           @id @default(uuid())
+  name        String           @unique
   users       User[]
   permissions PermissionRole[]
 }
 
 model User {
-  id             String       @id @default(uuid())
-  email          String       @unique
-  password_hash  String
-  first_name     String?
-  last_name      String?
-  is_active      Boolean      @default(true)
-  created_at     DateTime     @default(now())
-  updated_at     DateTime     @default(now())
-  role           Role         @relation(fields: [role_id], references: [id])
-  role_id        String
-  company        Company      @relation(fields: [company_id], references: [id])
-  company_id     String
-  createdWorkflows Workflow[] @relation("CreatedWorkflows")
-  comments       Comment[]
-  notifications  Notification[]
-  tickets        Ticket[]
-  usercontracts  UserContract[]
+  id               String         @id @default(uuid())
+  email            String         @unique
+  password_hash    String
+  first_name       String?
+  last_name        String?
+  is_active        Boolean        @default(true)
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @default(now())
+  role             Role           @relation(fields: [role_id], references: [id])
+  role_id          String
+  company          Company        @relation(fields: [company_id], references: [id])
+  company_id       String
+  createdWorkflows Workflow[]     @relation("CreatedWorkflows")
+  comments         Comment[]
+  notifications    Notification[]
+  tickets          Ticket[]
+  usercontracts    UserContract[]
 }
 
 model Permission {
-  id          String            @id @default(uuid())
-  name        String            @unique
-  roles       PermissionRole[]
-  
+  id    String           @id @default(uuid())
+  name  String           @unique
+  roles PermissionRole[]
 }
 
 model PermissionRole {
   permission_id String
   role_id       String
-  
+
   permission Permission @relation(fields: [permission_id], references: [id])
   role       Role       @relation(fields: [role_id], references: [id])
 
@@ -123,101 +122,108 @@ model PermissionRole {
 model UserContract {
   user_id     String
   contract_id String
-  
 
-  user User           @relation(fields: [user_id], references: [id])
-  contract Contract   @relation(fields: [contract_id], references: [id])
+  user     User     @relation(fields: [user_id], references: [id])
+  contract Contract @relation(fields: [contract_id], references: [id])
+  droit    Rights
 
   @@id([user_id, contract_id])
-  droit Rights
+}
+
+//Dynnamic fields
+// Modèle pour définir les champs dynamiques
+model DynamicField {
+  id                String      @id @default(uuid())
+  key               String      // Identifiant technique du champ
+  value             String
+  type              FieldType   // Type de champ
+  description       String?     // Description/aide pour le champ
+  created_at        DateTime    @default(now())
+  updated_at        DateTime    @updatedAt
+
+  contract          Contract    @relation(fields: [contract_id], references: [id])
+  contract_id       String
+  workflow_field WorkflowField[]
+}
+
+model WorkflowField {
+  dynamic_field DynamicField @relation(fields: [field_id], references: [id])
+  field_id      String
+  workflow      Workflow     @relation(fields: [workflow_id], references: [id])
+  workflow_id   String
+
+  @@id([field_id, workflow_id])
 }
 
 
 
 model Contract {
   id           String    @id @default(uuid())
- // workflow     Workflow          @relation(fields: [workflow_id], references: [id])
- // workflow_id  String
+ workflow     Workflow          @relation(fields: [workflow_id], references: [id])
+ workflow_id  String
   title        String
   status       Status
   data         Json
-  file_list    String
   language     Languages
-  isConfidential Boolean 
+  isConfidential Boolean
   created_by_id String?   //User.id
   created_at   DateTime   @default(now())
   updated_at   DateTime   @default(now())
   archived_at  DateTime?
   comments     Comment[]
   usercontracts  UserContract[]
-  //dynamic_field DynamicField[]
-}
-//Dynnamic fields
-// Modèle pour définir les champs dynamiques
-model DynamicField {
-  id                String      @id @default(uuid()) 
-  key               String      // Identifiant technique du champ
-  value             String
-  type              FieldType   
-  created_at        DateTime    @default(now())
-  updated_at        DateTime    @updatedAt
-
-  //contract          Contract    @relation(fields: [contract_id], references: [id])
-  //contract_id       String
-  workflow_field    WorkflowField[]
-}
-
-model WorkflowField {
-  dynamic_field    DynamicField      @relation(fields: [field_id], references: [id])
-  field_id         String
-  workflow         Workflow          @relation(fields: [workflow_id], references: [id])
-  workflow_id      String
-  @@id([field_id, workflow_id])
+  dynamic_field DynamicField[]
+  contract_step_logs ContractStepLog[]
 }
 
 model Workflow {
-  id          String   @id @default(uuid())
-  name        String
-  contract_name String?
-  description String?
-  created_by  User?    @relation("CreatedWorkflows", fields: [created_by_id], references: [id])
-  created_by_id String?
-  template_path String?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @default(now())
-  steps       Step[]
-  workflowfield WorkflowField[]
+  id               String          @id @default(uuid())
+  name             String
+  description      String?
+  contract_name   String?
+  file_name        String?
+  created_by       User?           @relation("CreatedWorkflows", fields: [created_by_id], references: [id])
+  created_by_id    String?
+  template_content String?
+  created_at       DateTime        @default(now())
+  updated_at       DateTime        @default(now())
+  steps            Step[]
+  workflowfield    WorkflowField[]
+  contracts        Contract[]
 }
 
 model Step {
-  id           String   @id @default(uuid())
-  workflow     Workflow @relation(fields: [workflow_id], references: [id])
-  workflow_id  String
-  name         String
-  description  String?
-  order        Int
-  action       Action[]
+  id          String   @id @default(uuid())
+  workflow    Workflow @relation(fields: [workflow_id], references: [id])
+  workflow_id String
+  name        String
+  contract_name String?
+  description String?
+  order       Int
+  action      Action[]
+  contractStepLogs ContractStepLog[]
 }
 
 model Action {
-  id          String        @id @default(uuid())
-  step        Step @relation(fields: [step_id], references: [id])
+  id          String      @id @default(uuid())
+  step        Step        @relation(fields: [step_id], references: [id])
   step_id     String
   type        TypeActions
   config      Json
   order       Int
-  is_required Boolean   @default(true)
+  is_required Boolean     @default(true)
+  contractStepLogs ContractStepLog[]
 }
 
 model Comment {
-  id           String   @id @default(uuid())
-  contract     Contract @relation(fields: [contract_id], references: [id])
-  contract_id  String
-  commented_by User?    @relation(fields: [commented_by_id], references: [id])
+  id              String   @id @default(uuid())
+  contract        Contract @relation(fields: [contract_id], references: [id])
+  contract_id     String
+  commented_by    User?    @relation(fields: [commented_by_id], references: [id])
   commented_by_id String?
-  comment      String
-  position     Int
-  created_at   DateTime @default(now())
+  comment         String
+  position        Int
+  created_at      DateTime @default(now())
 }
 
 model Notification {
@@ -237,11 +243,25 @@ model Setting {
 }
 
 model Ticket {
-  id         String   @id @default(uuid())
+  id         String  @id @default(uuid())
   title      String
   content    String
-  user       User     @relation(fields: [user_id], references: [id])
+  user       User    @relation(fields: [user_id], references: [id])
   user_id    String
-  company    Company  @relation(fields: [company_id], references: [id])
+  company    Company @relation(fields: [company_id], references: [id])
   company_id String
 }
+
+// Je veux creer une nouvelle table nommé contract_step_log qui contiendra les logs des étapes de chaque contrat. Cette table doit contenir les colonnes suivantes : id, contract_id, step_id, last_action_id, created_at, updated_at. La colonne contract_id doit être une clé étrangère vers la table Contract et la colonne step_id doit être une clé étrangère vers la table Step. La colonne last_action_id doit être une clé étrangère vers la table Action. La colonne created_at doit être de type DateTime et la colonne updated_at doit être de type DateTime. La colonne updated_at doit être mise à jour automatiquement à chaque fois qu'une ligne est modifiée.
+model ContractStepLog {
+  id            String   @id @default(uuid())
+  contract      Contract @relation(fields: [contract_id], references: [id])
+  contract_id   String
+  step          Step     @relation(fields: [step_id], references: [id])
+  step_id       String
+  last_action   Action   @relation(fields: [last_action_id], references: [id])
+  last_action_id String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+}
+

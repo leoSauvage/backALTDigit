@@ -164,6 +164,7 @@ model Contract {
   title        String
   status       Status
   data         Json
+  file_list    String
   language     Languages
   isConfidential Boolean
   created_by_id String?   //User.id

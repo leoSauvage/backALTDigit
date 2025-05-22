@@ -97,7 +97,37 @@ export default class Workflow {
           },
         },
       },
+  public static async findById(id: string) {
+    // Get the workflow with all its steps and actions in a single query
+    const workflow = await prisma.workflow.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        steps: {
+          orderBy: {
+            order: 'asc',
+          },
+          include: {
+            action: {
+              orderBy: {
+                order: 'asc',
+              },
+            },
+          },
+        },
+        workflowfield: {
+          include: {
+            dynamic_field: true,
+          },
+        },
+      },
     })
+
+    if (!workflow) {
+      throw new Error(`Workflow with ID ${id} not found`)
+    }
+    return workflow
 
     if (!workflow) {
       throw new Error(`Workflow with ID ${id} not found`)
@@ -140,6 +170,7 @@ export default class Workflow {
         return TypeActions.NOTIFIER
       case 'Email':
         return TypeActions.ENVOYER_MAIL
+        return TypeActions.ENVOYER_MAIL
       case 'Génération':
         return TypeActions.GENERER
       case 'Signature':
@@ -171,6 +202,7 @@ export default class Workflow {
     // Utiliser une transaction pour la mise à jour
     return await prisma.$transaction(async (tx) => {
       // 1. Mettre à jour le workflow principal
+      await tx.workflow.update({
       await tx.workflow.update({
         where: { id },
         data: {
@@ -248,6 +280,7 @@ export default class Workflow {
               },
             })
           } else {
+            await tx.step.create({
             await tx.step.create({
               data: {
                 ...stepData,

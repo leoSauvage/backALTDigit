@@ -277,7 +277,7 @@ export default class Workflow {
       }
 
       const questionData = await QuestionnaireModel.getQuestionnaireConfig(id)
-
+      console.log('questionData', questionData)
       await DynamicField.updateField(questionData, id)
       // 4. Récupérer le workflow mis à jour avec toutes ses relations
       return await tx.workflow.findUnique({

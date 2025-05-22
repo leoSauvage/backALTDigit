@@ -100,6 +100,7 @@ export default class DynamicField {
             },
           })
         }
+        console.log('existingField', existingField)
       }
     }
   }

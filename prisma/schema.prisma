@@ -178,6 +178,7 @@ model WorkflowField {
 model Workflow {
   id          String   @id @default(uuid())
   name        String
+  contract_name String?
   description String?
   created_by  User?    @relation("CreatedWorkflows", fields: [created_by_id], references: [id])
   created_by_id String?

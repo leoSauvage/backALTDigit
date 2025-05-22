@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import prisma from '#lib/prisma'
 import Workflow from '#models/workflow'
+import { TypeActions } from '@prisma/client'
 
 export default class QuestionnaireModel {
   /**
@@ -264,9 +265,10 @@ export default class QuestionnaireModel {
         step: {
           workflow_id: workflowId,
         },
-        type: 'QUESTIONNAIRE',
+        type: TypeActions.QUESTIONNAIRE,
       },
     })
+    console.log(questionnaireActions)
     const questionData = []
     for (const action of questionnaireActions) {
       const config: any = action.config
@@ -276,6 +278,7 @@ export default class QuestionnaireModel {
       for (const question of config.questions) {
         // Vérifier si la question contient une variable et un type, puis les stocker
         if (question.variable && question.type) {
+          console.log('question',question.variable, question.type)
           questionData.push({
             variable: question.variable,
             type: question.type,

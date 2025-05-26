@@ -5,37 +5,37 @@ export default class WorkflowController {
   /**
    * Créer un nouveau workflow
    */
-  // public async create({ request, response, auth }: HttpContext) {
-  //   try {
-  //     const { name, description } = request.body()
+  public async create({ request, response, auth }: HttpContext) {
+    try {
+      const { name, description } = request.body()
 
-  //     // Validation des données
-  //     if (!name) {
-  //       return response.status(400).json({
-  //         error: 'Name is required',
-  //       })
-  //     }
+      // Validation des données
+      if (!name) {
+        return response.status(400).json({
+          error: 'Name is required',
+        })
+      }
 
-  //     // Récupérer l'ID de l'utilisateur connecté si disponible
-  //     let userId: string | undefined
-  //     try {
-  //       const user = await auth.authenticate()
-  //       userId = user.$attributes.id
-  //     } catch (authError) {
-  //       // L'utilisateur n'est pas authentifié, on continue sans ID utilisateur
-  //     }
+      // Récupérer l'ID de l'utilisateur connecté si disponible
+      let userId: string | undefined
+      try {
+        const user = await auth.authenticate()
+        userId = user.$attributes.id
+      } catch (authError) {
+        // L'utilisateur n'est pas authentifié, on continue sans ID utilisateur
+      }
 
-  //     const workflow = await Workflow.create(name, description, userId)
+      const workflow = await Workflow.create(name, description, userId)
 
-  //     return response.status(201).json(workflow)
-  //   } catch (error: any) {
-  //     console.error('Error creating workflow:', error)
-  //     return response.status(500).json({
-  //       error: 'Failed to create workflow',
-  //       details: error.message || 'Unknown error',
-  //     })
-  //   }
-  // }
+      return response.status(201).json(workflow)
+    } catch (error: any) {
+      console.error('Error creating workflow:', error)
+      return response.status(500).json({
+        error: 'Failed to create workflow',
+        details: error.message || 'Unknown error',
+      })
+    }
+  }
 
   /**
    * Récupérer tous les workflows avec pagination
@@ -46,7 +46,6 @@ export default class WorkflowController {
       const limit = request.input('limit', 10)
 
       const workflows = await Workflow.getAll(Number(page), Number(limit))
-
       return response.json(workflows)
     } catch (error: any) {
       return response.status(500).json({

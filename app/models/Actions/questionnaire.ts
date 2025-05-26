@@ -278,7 +278,7 @@ export default class QuestionnaireModel {
       for (const question of config.questions) {
         // Vérifier si la question contient une variable et un type, puis les stocker
         if (question.variable && question.type) {
-          console.log('question',question.variable, question.type)
+          console.log('question', question.variable, question.type)
           questionData.push({
             variable: question.variable,
             type: question.type,

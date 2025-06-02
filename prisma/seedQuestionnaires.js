@@ -256,9 +256,9 @@ async function main() {
       isConfidential: false,
       workflow: {
         connect: {
-          id: standardContractWorkflow.id
-        }
-      }
+          id: standardContractWorkflow.id,
+        },
+      },
     },
     create: {
       id: 'standard-contract-1',
@@ -274,9 +274,9 @@ async function main() {
       isConfidential: false,
       workflow: {
         connect: {
-          id: standardContractWorkflow.id
-        }
-      }
+          id: standardContractWorkflow.id,
+        },
+      },
     },
   })
 

@@ -64,4 +64,24 @@ export default class Action {
       where: { id: actionId },
     })
   }
+
+  /**
+   * Crée un nouveau fichier
+   */
+  public static async createDocument(fileName: string, actionId: string) {
+    const action = await prisma.action.findUnique({
+      where: { id: actionId },
+    })
+    const fileNames = action!.file_names
+    if (!fileNames) {
+      throw new Error('Action non trouvée ou pas de fichiers associés')
+    }
+    fileNames.push(fileName)
+    const updatedAction = await prisma.action.update({
+      where: { id: actionId },
+      data: { file_names: fileNames },
+    })
+
+    return updatedAction
+  }
 }

@@ -77,7 +77,6 @@ export default class DynamicField {
           existingField = await prisma.dynamicField.create({
             data: {
               key: data.variable,
-              value: '',
               type: fieldType,
             },
           })
@@ -100,7 +99,6 @@ export default class DynamicField {
             },
           })
         }
-        console.log('existingField', existingField)
       }
     }
   }

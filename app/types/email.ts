@@ -4,5 +4,5 @@ export interface MailActionConfig {
   destinataires: string[] // Liste des destinataires
   CC?: string[] // Destinataires en copie (optionnel)
   BCC?: string[] // Destinataires en copie cachée (optionnel)
-  attachments?: string[] // Liste des pièces jointes
+  // attachments?: string[]
 }

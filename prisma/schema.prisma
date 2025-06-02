@@ -177,7 +177,7 @@ model Workflow {
   name             String
   description      String?
   contract_name   String?
-  file_name        String?
+  file_names        String[]
   created_by       User?           @relation("CreatedWorkflows", fields: [created_by_id], references: [id])
   created_by_id    String?
   template_content String?

@@ -129,22 +129,28 @@ export default class Workflow {
 
   public static async typeActionSwitch(type: string) {
     switch (type) {
-      case 'Formulaire':
+      case 'QUESTIONNAIRE':
         return TypeActions.QUESTIONNAIRE
       case 'Notification':
         return TypeActions.NOTIFIER
-      case 'Email':
+      case 'ENVOYER_MAIL':
         return TypeActions.ENVOYER_MAIL
-      case 'Génération':
+      case 'GENERER':
         return TypeActions.GENERER
-      case 'Signature':
+      case 'SIGNER':
         return TypeActions.SIGNER
-      case 'Validation':
+      case 'VALIDER':
         return TypeActions.VALIDER
       default:
         return TypeActions.AUTRE
     }
   }
+
+  /**
+   * Updates an existing workflow with new data, including steps and actions.
+   * - Checks if the workflow exists and then performs inserts, updates, or deletions as needed.
+   * - Uses a transaction to ensure all changes succeed together or are rolled back if any fail.
+   */
   public static async updateWorkflow(id: string, data: any) {
     // Fetch the current workflow from the database (including related workflow fields).
     const existingWorkflow = await prisma.workflow.findUnique({
@@ -165,7 +171,7 @@ export default class Workflow {
     // Begin a database transaction for the update.
     return await prisma.$transaction(
       async (tx) => {
-        // 1. Update the main Workflow record.
+        // 1. Update the main Workflow record:
         await tx.workflow.update({
           where: { id },
           data: {
@@ -192,58 +198,75 @@ export default class Workflow {
           )
           if (stepIdsToDelete.length > 0) {
             await tx.action.deleteMany({
-              where: {
-                step_id: { in: stepIdsToDelete },
-              },
+              where: { step_id: { in: stepIdsToDelete } },
             })
             await tx.step.deleteMany({
-              where: {
-                id: { in: stepIdsToDelete },
-              },
+              where: { id: { in: stepIdsToDelete } },
             })
           }
 
-          // 2.4 Process each provided step (insert/update).
+          // 2.4 Insert or update each provided step.
           for (const stepItem of steps) {
+            // Extract step data and actions
             const { id: stepId, action = [], ...stepData } = stepItem
-            console.log('action', action)
-            // 2) If the step already exists, update it; otherwise create
-            if (stepId && existingStepIds.includes(stepId)) {
-              // Fetch existing Actions for this step
-              const existingActions = await tx.action.deleteMany({
+            if (existingStepIds.includes(stepId) && !stepIdsToDelete.includes(stepId)) {
+              // Fetch existing actions for this step (by stepId)
+              const existingActions = await tx.action.findMany({
                 where: { step_id: stepId },
+                select: { id: true },
               })
-              // Create new Actions
-              if (action.length > 0) {
-                const createdAction = await tx.action.createMany({
-                  data: action.map((ac: any) => ({
-                    ...ac,
-                    step_id: stepId,
-                  })),
+              const existingActionIds = existingActions.map((a) => a.id)
+
+              // Figure out which actions remain in the updated data
+              const actionIdsToKeep = action.filter((a) => a.id).map((a) => a.id)
+
+              // Remove old actions no longer present
+              const actionIdsToDelete = existingActionIds.filter(
+                (actionId) => !actionIdsToKeep.includes(actionId)
+              )
+              if (actionIdsToDelete.length > 0) {
+                await tx.action.deleteMany({
+                  where: { id: { in: actionIdsToDelete } },
                 })
               }
 
-              // Update the Step itself
+              // Create or update actions
+              for (const { id: actionId, ...actionData } of action) {
+                if (actionId && existingActionIds.includes(actionId)) {
+                  // Action exists, so update
+                  await tx.action.update({
+                    where: { id: actionId },
+                    data: actionData,
+                  })
+                } else {
+                  // Create new action
+                  await tx.action.create({
+                    data: {
+                      ...actionData,
+                      step_id: stepId,
+                    },
+                  })
+                }
+              }
+
+              // If the step has an ID, update it; otherwise, create it
+
               await tx.step.update({
                 where: { id: stepId },
-                data: {
-                  ...stepData,
-                },
+                data: { ...stepData },
               })
             } else {
-              // If step does not exist, create a new one (along with its actions).
-              await tx.step.create({
+              const newAction = await tx.step.create({
                 data: {
                   ...stepData,
-                  workflow: {
-                    connect: { id },
-                  },
+                  workflow: { connect: { id } },
                   action: Array.isArray(action)
                     ? {
                         create: await Promise.all(
                           action.map(async (a) => {
                             const { id: droppedId, ...restData } = a
                             const typeAction = await Workflow.typeActionSwitch(restData.type)
+                            console.log('typeAction:', typeAction)
                             return {
                               ...restData,
                               type: typeAction,
@@ -254,11 +277,12 @@ export default class Workflow {
                     : undefined,
                 },
               })
+              console.log('New step created:', newAction)
             }
           }
         }
 
-        // 3. Example: Additional custom logic can be placed here (e.g., updating dynamic fields).
+        // 3. Example: Additional custom logic can be placed here (e.g., dynamic field updates).
         const questionData = await QuestionnaireModel.getQuestionnaireConfig(id)
         await DynamicField.updateField(questionData, id)
 
@@ -266,11 +290,12 @@ export default class Workflow {
         const updatedWorkflow = await prisma.workflow.findUnique({
           where: { id },
         })
+
         return updatedWorkflow
       },
       {
-        maxWait: 2000, // How long to wait to acquire the transaction in ms
-        timeout: 10000, // Total transaction timeout in ms
+        maxWait: 2000, // How long to wait to acquire the transaction (ms)
+        timeout: 10000, // Total transaction timeout (ms)
       }
     )
   }

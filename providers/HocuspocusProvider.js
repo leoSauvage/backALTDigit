@@ -1,4 +1,5 @@
 import { Server as HocuspocusServer } from '@hocuspocus/server'
+import { onStoreDocument, onLoadDocument } from './document_helpers.js'
 
 /**
  * This provider boots up a Hocuspocus collaborative‐editing server
@@ -7,13 +8,16 @@ import { Server as HocuspocusServer } from '@hocuspocus/server'
 export default class HocuspocusProvider {
   constructor() {}
 
-  public register() {
+  register() {
     // nothing to register in the IoC container for now
   }
 
-  public async boot() {
+  async boot() {
     const hocuspocus = new HocuspocusServer({
       port: 3332,
+      onStoreDocument,
+      onLoadDocument,
+      debounce: 5000
     })
 
     await hocuspocus.listen()

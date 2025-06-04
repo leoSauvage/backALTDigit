@@ -16,6 +16,11 @@ const workflowRouter = router
 
     // Mettre à jour le contenu d'un workflow
     router.put('/workflows/attributes/:id', '#controllers/Conseil/workflow.updateAttributes')
+
+    router.put('/workflows/category/:id', '#controllers/Conseil/workflow.updateWorkflowCategory')
+
+    router.post('/workflows/category', '#controllers/Conseil/workflow.createCategory')
+
     // Supprimer un workflow
     router.delete('/workflows/:id', '#controllers/Conseil/workflow.delete')
   })

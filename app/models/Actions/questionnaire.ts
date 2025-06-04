@@ -282,6 +282,7 @@ export default class QuestionnaireModel {
           questionData.push({
             variable: question.variable,
             type: question.type,
+            id: question.id,
           })
         }
       }

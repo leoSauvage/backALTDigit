@@ -13,12 +13,14 @@ export default class Workflow {
   public static async create(
     name: string,
     description: string,
+    category_id?: string,
     createdById?: string
   ): Promise<WorkflowModel> {
     return await prisma.workflow.create({
       data: {
         name,
         description,
+        category_id: category_id || null,
         created_by_id: createdById,
       },
     })
@@ -29,42 +31,16 @@ export default class Workflow {
    * @param page Numéro de page
    * @param limit Nombre d'éléments par page
    */
-  public static async getAll(page: number = 1, limit: number = 10) {
-    const skip = (page - 1) * limit
-
-    const [workflows, total] = await Promise.all([
-      prisma.workflow.findMany({
-        skip,
-        take: limit,
-        include: {
-          created_by: {
-            select: {
-              id: true,
-            },
-          },
-          _count: {
-            select: {
-              steps: true,
-              //contracts: true
-            },
-          },
-        },
-        orderBy: {
-          created_at: 'desc',
-        },
-      }),
-      prisma.workflow.count(),
-    ])
-
-    return {
-      data: workflows,
-      pagination: {
-        total,
-        page,
-        limit,
-        lastPage: Math.ceil(total / limit),
+  public static async getNoCategory() {
+    const workflows = await prisma.workflow.findMany({
+      where: {
+        category_id: null,
       },
-    }
+      orderBy: {
+        created_at: 'desc',
+      },
+    })
+    return workflows
   }
 
   public static async findById(id: string) {
@@ -225,6 +201,11 @@ export default class Workflow {
                 (actionId) => !actionIdsToKeep.includes(actionId)
               )
               if (actionIdsToDelete.length > 0) {
+                await tx.contractStepLog.deleteMany({
+                  where: {
+                    last_action_id: { in: actionIdsToDelete },
+                  },
+                })
                 await tx.action.deleteMany({
                   where: { id: { in: actionIdsToDelete } },
                 })
@@ -266,7 +247,6 @@ export default class Workflow {
                           action.map(async (a) => {
                             const { id: droppedId, ...restData } = a
                             const typeAction = await Workflow.typeActionSwitch(restData.type)
-                            console.log('typeAction:', typeAction)
                             return {
                               ...restData,
                               type: typeAction,
@@ -277,27 +257,42 @@ export default class Workflow {
                     : undefined,
                 },
               })
-              console.log('New step created:', newAction)
             }
           }
         }
 
-        // 3. Example: Additional custom logic can be placed here (e.g., dynamic field updates).
         const questionData = await QuestionnaireModel.getQuestionnaireConfig(id)
         await DynamicField.updateField(questionData, id)
 
-        // 4. Return the updated workflow with all its relations.
         const updatedWorkflow = await prisma.workflow.findUnique({
           where: { id },
+          include: {
+            workflowfield: {
+              include: {
+                dynamic_field: true,
+              },
+            },
+          },
         })
 
         return updatedWorkflow
       },
       {
-        maxWait: 2000, // How long to wait to acquire the transaction (ms)
-        timeout: 10000, // Total transaction timeout (ms)
+        maxWait: 2000,
+        timeout: 20000,
       }
     )
+  }
+
+  public static async updateWorkflowCategory(
+    workflowId: string,
+    categoryId: string
+  ): Promise<WorkflowModel> {
+    const updatedWorkflow = await prisma.workflow.update({
+      where: { id: workflowId },
+      data: { category_id: categoryId },
+    })
+    return updatedWorkflow
   }
 
   /**

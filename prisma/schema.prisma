@@ -148,7 +148,7 @@ model WorkflowField {
   workflow      Workflow     @relation(fields: [workflow_id], references: [id])
   workflow_id   String
 
-  @@id([field_id, workflow_id])
+  @@unique([field_id, workflow_id])
 }
 
 
@@ -172,6 +172,19 @@ model Contract {
   contract_step_logs ContractStepLog[]
 }
 
+model Document {
+  id Int @id @default(autoincrement())
+  tiptap_content String @db.Text
+  action     Action          @relation(fields: [action_id], references: [id])
+  action_id  String
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  workflows    Workflow[]
+}
+
 model Workflow {
   id               String          @id @default(uuid())
   name             String
@@ -180,7 +193,8 @@ model Workflow {
   file_names        String[]
   created_by       User?           @relation("CreatedWorkflows", fields: [created_by_id], references: [id])
   created_by_id    String?
-  template_content String?
+  category         Category?       @relation(fields: [category_id], references: [id])
+  category_id      String?
   created_at       DateTime        @default(now())
   updated_at       DateTime        @default(now())
   steps            Step[]
@@ -209,6 +223,7 @@ model Action {
   order       Int
   is_required Boolean     @default(true)
   contractStepLogs ContractStepLog[]
+  documents        Document[]
 }
 
 model Comment {

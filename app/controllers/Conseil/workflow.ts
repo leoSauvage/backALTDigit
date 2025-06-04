@@ -1,3 +1,4 @@
+import Category from '#models/category'
 import Workflow from '#models/workflow'
 import { HttpContext } from '@adonisjs/core/http'
 
@@ -7,7 +8,7 @@ export default class WorkflowController {
    */
   public async create({ request, response, auth }: HttpContext) {
     try {
-      const { name, description } = request.body()
+      const { name, description, category_id } = request.body()
 
       // Validation des données
       if (!name) {
@@ -25,8 +26,7 @@ export default class WorkflowController {
         // L'utilisateur n'est pas authentifié, on continue sans ID utilisateur
       }
 
-      const workflow = await Workflow.create(name, description, userId)
-
+      const workflow = await Workflow.create(name, description, category_id, userId)
       return response.status(201).json(workflow)
     } catch (error: any) {
       console.error('Error creating workflow:', error)
@@ -38,18 +38,63 @@ export default class WorkflowController {
   }
 
   /**
-   * Récupérer tous les workflows avec pagination
+   * Récupérer tous les workflows avec leur catégorie
    */
-  public async index({ request, response }: HttpContext) {
+  public async index({ response }: HttpContext) {
     try {
-      const page = request.input('page', 1)
-      const limit = request.input('limit', 10)
-
-      const workflows = await Workflow.getAll(Number(page), Number(limit))
+      const workflowsWithCategory = await Category.getAll()
+      const workflowsWithoutCategory = await Workflow.getNoCategory()
+      const workflows = [[...workflowsWithCategory], workflowsWithoutCategory]
       return response.json(workflows)
     } catch (error: any) {
       return response.status(500).json({
         error: 'Failed to retrieve workflows',
+        details: error.message || 'Unknown error',
+      })
+    }
+  }
+
+  public async createCategory({ request, response }: HttpContext) {
+    try {
+      const { name } = request.body()
+
+      // Validation des données
+      if (!name) {
+        return response.status(400).json({
+          error: 'Name is required',
+        })
+      }
+
+      const category = await Category.create(name)
+
+      return response.status(201).json(category)
+    } catch (error: any) {
+      console.error('Error creating category:', error)
+      return response.status(500).json({
+        error: 'Failed to create category',
+        details: error.message || 'Unknown error',
+      })
+    }
+  }
+
+  public async updateWorkflowCategory({ request, params, response }: HttpContext) {
+    try {
+      const { id } = params
+      const { categoryId } = request.body()
+
+      // Validation des données
+      if (!categoryId) {
+        return response.status(400).json({
+          error: 'Category ID is required',
+        })
+      }
+      const updatedWorkflow = await Workflow.updateWorkflowCategory(id, categoryId)
+
+      return response.json(updatedWorkflow)
+    } catch (error: any) {
+      console.error('Error updating workflow category:', error)
+      return response.status(500).json({
+        error: 'Failed to update workflow category',
         details: error.message || 'Unknown error',
       })
     }

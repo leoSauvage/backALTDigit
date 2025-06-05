@@ -60,10 +60,11 @@ export default class DynamicField {
   ) {
     if (questionData.length > 0) {
       for (const data of questionData) {
+        console.log('data', data)
         // Vérifier l'existence d'un dynamicField pour cette variable
         let existingField = await prisma.dynamicField.findFirst({
           where: {
-            key: data.variable,
+            id: data.id,
             workflow_field: {
               some: {
                 workflow_id: workflowId,
@@ -71,34 +72,41 @@ export default class DynamicField {
             },
           },
         })
+        const fieldType = await DynamicField.getFieldTypeFromString(data.type)
         if (!existingField) {
-          // Créer un nouveau champ
-          const fieldType = await DynamicField.getFieldTypeFromString(data.type)
           existingField = await prisma.dynamicField.create({
+            data: {
+              id: data.id,
+              key: data.variable,
+              type: fieldType,
+            },
+          })
+          console.log('create', existingField)
+        } else {
+          existingField = await prisma.dynamicField.update({
+            where: { id: existingField.id },
             data: {
               key: data.variable,
               type: fieldType,
             },
           })
+          console.log('update', existingField)
         }
         // Vérifier si on a déjà workflowField qui relie ce champ au workflow
-        const existingRelation = await prisma.workflowField.findUnique({
+        const lien = await prisma.workflowField.upsert({
           where: {
             field_id_workflow_id: {
-              field_id: existingField.id,
               workflow_id: workflowId,
+              field_id: existingField.id,
             },
           },
+          update: {}, // rien à mettre à jour si ça existe déjà
+          create: {
+            workflow_id: workflowId,
+            field_id: existingField.id,
+          },
         })
-        // Si non relié encore, on crée le lien
-        if (!existingRelation) {
-          await prisma.workflowField.create({
-            data: {
-              workflow_id: workflowId,
-              field_id: existingField.id,
-            },
-          })
-        }
+        console.log('lien', lien)
       }
     }
   }
@@ -116,12 +124,11 @@ export default class DynamicField {
       'Date': FieldType.Date,
       'Temps': FieldType.Time,
       'Select': FieldType.Select,
-      'Multi Select': FieldType.MultiSelect,
+      'MultiSelect': FieldType.MultiSelect,
       'Radio': FieldType.Radio,
       'Currency': FieldType.Currency,
       'Email': FieldType.Email,
       'Phone': FieldType.Phone,
-      'Adress': FieldType.Address,
       'File': FieldType.File,
       'Country': FieldType.Country,
       'Nationalité': FieldType.Nationality,

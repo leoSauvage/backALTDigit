@@ -9,6 +9,20 @@ datasource db {
 
 // ENUMS
 
+enum Permission {
+  CREATE_CONTRACT
+  MODIFY_CONTRACT
+  READ_ONLY_CONTRACT
+  ARCHIVE_CONTRACT
+  CREATE_FOLDER
+  MODIFY_FOLDER
+  READ_ONLY_FOLDER
+  INVITE_USER
+  CREATE_ROLE
+  MODIFY_ROLE
+  READ_ONLY_ROLE
+}
+
 // Proposition d'extension de l'enum TypeActions
 enum TypeActions {
   ENVOYER_MAIL // Envoi d'emails
@@ -66,6 +80,7 @@ model Company {
   users   User[]
   tickets Ticket[]
   files   File[]
+  roles   Role[]
 }
 
 model File {
@@ -79,14 +94,16 @@ model File {
 model Role {
   id          String           @id @default(uuid())
   name        String           @unique
+  company    Company @relation(fields: [company_id], references: [id])
+  company_id String
   users       User[]
-  permissions PermissionRole[]
+  permissions Permission[]
 }
 
 model User {
   id               String         @id @default(uuid())
   email            String         @unique
-  password_hash    String
+  password_hash    String?
   first_name       String?
   last_name        String?
   is_active        Boolean        @default(true)
@@ -101,22 +118,6 @@ model User {
   notifications    Notification[]
   tickets          Ticket[]
   usercontracts    UserContract[]
-}
-
-model Permission {
-  id    String           @id @default(uuid())
-  name  String           @unique
-  roles PermissionRole[]
-}
-
-model PermissionRole {
-  permission_id String
-  role_id       String
-
-  permission Permission @relation(fields: [permission_id], references: [id])
-  role       Role       @relation(fields: [role_id], references: [id])
-
-  @@id([permission_id, role_id])
 }
 
 model UserContract {
@@ -148,7 +149,7 @@ model WorkflowField {
   workflow      Workflow     @relation(fields: [workflow_id], references: [id])
   workflow_id   String
 
-  @@id([field_id, workflow_id])
+  @@unique([field_id, workflow_id])
 }
 
 model Contract {
@@ -170,6 +171,19 @@ model Contract {
   contract_step_logs ContractStepLog[]
 }
 
+model Document {
+  id Int @id @default(autoincrement())
+  tiptap_content String @db.Text
+  action     Action          @relation(fields: [action_id], references: [id])
+  action_id  String
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  workflows    Workflow[]
+}
+
 model Workflow {
   id               String          @id @default(uuid())
   name             String
@@ -178,7 +192,8 @@ model Workflow {
   file_names       String[]
   created_by       User?           @relation("CreatedWorkflows", fields: [created_by_id], references: [id])
   created_by_id    String?
-  template_content String?
+  category         Category?       @relation(fields: [category_id], references: [id])
+  category_id      String?
   created_at       DateTime        @default(now())
   updated_at       DateTime        @default(now())
   steps            Step[]
@@ -207,6 +222,7 @@ model Action {
   order            Int
   is_required      Boolean           @default(true)
   contractStepLogs ContractStepLog[]
+  documents        Document[]
 }
 
 model Comment {

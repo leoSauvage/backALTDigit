@@ -60,7 +60,7 @@
     "@adonisjs/cors": "^2.2.1",
     "@adonisjs/lucid": "^21.6.0",
     "@hocuspocus/server": "^3.1.1",
-    "@prisma/client": "^6.8.2",
+    "@prisma/client": "^6.9.0",
     "@vinejs/vine": "^3.0.0",
     "bcrypt": "^5.1.1",
     "js-base64": "^3.7.7",

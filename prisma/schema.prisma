@@ -9,6 +9,20 @@ datasource db {
 
 // ENUMS
 
+enum Permission {
+  CREATE_CONTRACT
+  MODIFY_CONTRACT
+  READ_ONLY_CONTRACT
+  ARCHIVE_CONTRACT
+  CREATE_FOLDER
+  MODIFY_FOLDER
+  READ_ONLY_FOLDER
+  INVITE_USER
+  CREATE_ROLE
+  MODIFY_ROLE
+  READ_ONLY_ROLE
+}
+
 // Proposition d'extension de l'enum TypeActions
 enum TypeActions {
   ENVOYER_MAIL // Envoi d'emails
@@ -66,6 +80,7 @@ model Company {
   users   User[]
   tickets Ticket[]
   files   File[]
+  roles   Role[]
 }
 
 model File {
@@ -79,14 +94,16 @@ model File {
 model Role {
   id          String           @id @default(uuid())
   name        String           @unique
+  company    Company @relation(fields: [company_id], references: [id])
+  company_id String
   users       User[]
-  permissions PermissionRole[]
+  permissions Permission[]
 }
 
 model User {
   id               String         @id @default(uuid())
   email            String         @unique
-  password_hash    String
+  password_hash    String?
   first_name       String?
   last_name        String?
   is_active        Boolean        @default(true)
@@ -101,22 +118,6 @@ model User {
   notifications    Notification[]
   tickets          Ticket[]
   usercontracts    UserContract[]
-}
-
-model Permission {
-  id    String           @id @default(uuid())
-  name  String           @unique
-  roles PermissionRole[]
-}
-
-model PermissionRole {
-  permission_id String
-  role_id       String
-
-  permission Permission @relation(fields: [permission_id], references: [id])
-  role       Role       @relation(fields: [role_id], references: [id])
-
-  @@id([permission_id, role_id])
 }
 
 model UserContract {

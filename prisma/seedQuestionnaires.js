@@ -105,13 +105,19 @@ async function main() {
     update: {
       name: 'Standard Contract Workflow',
       description: 'Workflow for standard contract processing',
+      contract_name: 'Standard Service Contract',
+      file_name: 'standard_contract_template.docx',
       created_by_id: adminUser.id,
+      template_content: 'Standard contract template content...',
     },
     create: {
       id: 'standard-contract-workflow',
       name: 'Standard Contract Workflow',
       description: 'Workflow for standard contract processing',
+      contract_name: 'Standard Service Contract',
+      file_name: 'standard_contract_template.docx',
       created_by_id: adminUser.id,
+      template_content: 'Standard contract template content...',
     },
   })
 
@@ -120,13 +126,19 @@ async function main() {
     update: {
       name: 'NDA Process',
       description: 'Workflow for processing Non-Disclosure Agreements',
+      contract_name: 'Non-Disclosure Agreement',
+      file_name: 'nda_template.docx',
       created_by_id: adminUser.id,
+      template_content: 'NDA template content...',
     },
     create: {
       id: 'nda-process',
       name: 'NDA Process',
       description: 'Workflow for processing Non-Disclosure Agreements',
+      contract_name: 'Non-Disclosure Agreement',
+      file_name: 'nda_template.docx',
       created_by_id: adminUser.id,
+      template_content: 'NDA template content...',
     },
   })
 
@@ -138,6 +150,7 @@ async function main() {
     update: {
       name: 'Draft Contract',
       description: 'Create initial contract draft',
+      contract_name: 'Draft Contract Document',
       workflow_id: standardContractWorkflow.id,
       order: 1,
     },
@@ -145,6 +158,7 @@ async function main() {
       id: 'draft-step',
       name: 'Draft Contract',
       description: 'Create initial contract draft',
+      contract_name: 'Draft Contract Document',
       workflow_id: standardContractWorkflow.id,
       order: 1,
     },
@@ -155,6 +169,7 @@ async function main() {
     update: {
       name: 'Legal Review',
       description: 'Legal department reviews the contract',
+      contract_name: 'Contract Under Legal Review',
       workflow_id: standardContractWorkflow.id,
       order: 2,
     },
@@ -162,6 +177,7 @@ async function main() {
       id: 'legal-review-step',
       name: 'Legal Review',
       description: 'Legal department reviews the contract',
+      contract_name: 'Contract Under Legal Review',
       workflow_id: standardContractWorkflow.id,
       order: 2,
     },
@@ -172,6 +188,7 @@ async function main() {
     update: {
       name: 'Final Approval',
       description: 'Get final approval for the contract',
+      contract_name: 'Contract Pending Final Approval',
       workflow_id: standardContractWorkflow.id,
       order: 3,
     },
@@ -179,6 +196,7 @@ async function main() {
       id: 'approval-step',
       name: 'Final Approval',
       description: 'Get final approval for the contract',
+      contract_name: 'Contract Pending Final Approval',
       workflow_id: standardContractWorkflow.id,
       order: 3,
     },
@@ -192,6 +210,7 @@ async function main() {
     update: {
       name: 'Draft NDA',
       description: 'Create initial NDA draft',
+      contract_name: 'NDA Draft Document',
       workflow_id: ndaWorkflow.id,
       order: 1,
     },
@@ -199,6 +218,7 @@ async function main() {
       id: 'nda-draft-step',
       name: 'Draft NDA',
       description: 'Create initial NDA draft',
+      contract_name: 'NDA Draft Document',
       workflow_id: ndaWorkflow.id,
       order: 1,
     },
@@ -209,6 +229,7 @@ async function main() {
     update: {
       name: 'NDA Review',
       description: 'Legal department reviews the NDA',
+      contract_name: 'NDA Under Review',
       workflow_id: ndaWorkflow.id,
       order: 2,
     },
@@ -216,6 +237,7 @@ async function main() {
       id: 'nda-review-step',
       name: 'NDA Review',
       description: 'Legal department reviews the NDA',
+      contract_name: 'NDA Under Review',
       workflow_id: ndaWorkflow.id,
       order: 2,
     },
@@ -226,6 +248,7 @@ async function main() {
     update: {
       name: 'NDA Signature',
       description: 'Sign the NDA',
+      contract_name: 'NDA Ready for Signature',
       workflow_id: ndaWorkflow.id,
       order: 3,
     },
@@ -233,6 +256,7 @@ async function main() {
       id: 'nda-signature-step',
       name: 'NDA Signature',
       description: 'Sign the NDA',
+      contract_name: 'NDA Ready for Signature',
       workflow_id: ndaWorkflow.id,
       order: 3,
     },
@@ -252,6 +276,7 @@ async function main() {
         start_date: '2025-06-01',
         end_date: '2026-05-31',
       },
+      file_list: 'acme_service_agreement.pdf,acme_annexes.pdf',
       language: Languages.Français,
       isConfidential: false,
       workflow: {
@@ -270,6 +295,7 @@ async function main() {
         start_date: '2025-06-01',
         end_date: '2026-05-31',
       },
+      file_list: 'acme_service_agreement.pdf,acme_annexes.pdf',
       language: Languages.Français,
       isConfidential: false,
       workflow: {
@@ -289,8 +315,10 @@ async function main() {
         counterparty: 'TechPartner Inc.',
         effective_date: '2025-05-30',
       },
+      file_list: 'techpartner_nda.pdf',
       language: Languages.Anglais,
       isConfidential: true,
+      created_by_id: legalUser.id,
       workflow_id: ndaWorkflow.id,
     },
     create: {
@@ -301,8 +329,10 @@ async function main() {
         counterparty: 'TechPartner Inc.',
         effective_date: '2025-05-30',
       },
+      file_list: 'techpartner_nda.pdf',
       language: Languages.Anglais,
       isConfidential: true,
+      created_by_id: legalUser.id,
       workflow_id: ndaWorkflow.id,
     },
   })
@@ -319,8 +349,10 @@ async function main() {
         start_date: '2025-07-01',
         end_date: '2026-06-30',
       },
+      file_list: 'beta_consulting_agreement.pdf',
       language: Languages.Français,
       isConfidential: false,
+      created_by_id: regularUser.id,
       workflow_id: standardContractWorkflow.id,
     },
     create: {
@@ -333,13 +365,83 @@ async function main() {
         start_date: '2025-07-01',
         end_date: '2026-06-30',
       },
+      file_list: 'beta_consulting_agreement.pdf',
       language: Languages.Français,
       isConfidential: false,
+      created_by_id: regularUser.id,
       workflow_id: standardContractWorkflow.id,
     },
   })
 
   console.log(`Created sample contracts`)
+
+  // Create some dynamic fields examples
+  const clientNameField = await prisma.dynamicField.create({
+    data: {
+      key: 'client_name',
+      type: FieldType.Text,
+      description: 'Name of the client company',
+    },
+  })
+
+  const contractValueField = await prisma.dynamicField.create({
+    data: {
+      key: 'contract_value',
+      type: FieldType.Currency,
+      description: 'Total value of the contract',
+    },
+  })
+
+  const startDateField = await prisma.dynamicField.create({
+    data: {
+      key: 'start_date',
+      type: FieldType.Date,
+      description: 'Contract start date',
+    },
+  })
+
+  // Link dynamic fields to workflows
+  await prisma.workflowField.createMany({
+    data: [
+      {
+        field_id: clientNameField.id,
+        workflow_id: standardContractWorkflow.id,
+      },
+      {
+        field_id: contractValueField.id,
+        workflow_id: standardContractWorkflow.id,
+      },
+      {
+        field_id: startDateField.id,
+        workflow_id: standardContractWorkflow.id,
+      },
+    ],
+  })
+
+  console.log('Created dynamic fields and linked them to workflows')
+
+  // Create some sample files
+  await prisma.file.createMany({
+    data: [
+      {
+        name: 'acme_service_agreement.pdf',
+        location: '/uploads/contracts/acme_service_agreement.pdf',
+        company_id: company.id,
+      },
+      {
+        name: 'techpartner_nda.pdf',
+        location: '/uploads/contracts/techpartner_nda.pdf',
+        company_id: company.id,
+      },
+      {
+        name: 'beta_consulting_agreement.pdf',
+        location: '/uploads/contracts/beta_consulting_agreement.pdf',
+        company_id: company.id,
+      },
+    ],
+  })
+
+  console.log('Created sample files')
 
   // Seed questionnaires data
   await seedQuestionnaires()
@@ -497,7 +599,7 @@ async function seedQuestionnaires() {
           id: 'draft2_q2',
           question: 'Adresse de la contrepartie',
           description: 'Adresse complète de la contrepartie',
-          type: FieldType.Address,
+          type: FieldType.Adress,
           fieldKey: 'counterparty_address',
           isRequired: true,
           order: 2,
@@ -753,152 +855,107 @@ async function seedQuestionnaires() {
         },
         {
           id: 'approval1_q2',
-          question: 'Alignement stratégique',
-          description: "Ce contrat est-il aligné avec la stratégie de l'entreprise?",
+          question: 'Rentabilité prévue',
+          description: 'Estimation de la rentabilité de ce contrat',
           type: FieldType.Select,
-          fieldKey: 'strategic_alignment',
+          fieldKey: 'profitability',
           isRequired: true,
           order: 2,
           options: [
-            { label: 'Parfaitement aligné', value: 'perfectly_aligned' },
-            { label: 'Bien aligné', value: 'well_aligned' },
-            { label: 'Partiellement aligné', value: 'partially_aligned' },
-            { label: 'Non aligné', value: 'not_aligned' },
+            { label: 'Très rentable', value: 'very_profitable' },
+            { label: 'Rentable', value: 'profitable' },
+            { label: 'Neutre', value: 'neutral' },
+            { label: 'Peu rentable', value: 'low_profit' },
+            { label: 'Non rentable', value: 'unprofitable' },
           ],
         },
         {
           id: 'approval1_q3',
-          question: 'Retour sur investissement estimé',
-          description: 'Quel est le ROI estimé pour ce contrat?',
-          type: FieldType.Select,
-          fieldKey: 'estimated_roi',
+          question: 'Alignement stratégique',
+          description: "Ce contrat est-il aligné avec la stratégie de l'entreprise?",
+          type: FieldType.Radio,
+          fieldKey: 'strategic_alignment',
           isRequired: true,
           order: 3,
           options: [
-            { label: 'Moins de 6 mois', value: 'less_than_6_months' },
-            { label: '6-12 mois', value: '6_to_12_months' },
-            { label: '1-2 ans', value: '1_to_2_years' },
-            { label: 'Plus de 2 ans', value: 'more_than_2_years' },
+            { label: 'Parfaitement aligné', value: 'perfectly_aligned' },
+            { label: 'Bien aligné', value: 'well_aligned' },
+            { label: 'Partiellement aligné', value: 'partially_aligned' },
+            { label: 'Peu aligné', value: 'poorly_aligned' },
+            { label: 'Non aligné', value: 'not_aligned' },
           ],
         },
         {
           id: 'approval1_q4',
-          question: 'Justification commerciale',
-          description: 'Justification détaillée pour ce contrat',
+          question: 'Ressources nécessaires',
+          description: 'Quelles ressources seront nécessaires pour exécuter ce contrat?',
           type: FieldType.LongText,
-          fieldKey: 'business_justification',
+          fieldKey: 'required_resources',
           isRequired: true,
           order: 4,
-          placeholder: 'Entrez la justification commerciale détaillée',
+          placeholder: 'Décrivez les ressources humaines, techniques et financières',
         },
       ],
     },
     {
-      title: 'Validation financière',
+      title: 'Approbation finale',
       questions: [
         {
           id: 'approval2_q1',
-          question: 'Budget disponible',
-          description: 'Le budget est-il disponible pour ce contrat?',
-          type: FieldType.Radio,
-          fieldKey: 'budget_available',
+          question: "Décision d'approbation",
+          description: 'Décision finale concernant ce contrat',
+          type: FieldType.Select,
+          fieldKey: 'final_approval_decision',
           isRequired: true,
           order: 1,
           options: [
-            { label: 'Oui', value: 'yes' },
-            { label: 'Non', value: 'no' },
-            { label: 'Partiellement', value: 'partially' },
+            { label: 'Approuvé sans réserve', value: 'approved_unconditionally' },
+            { label: 'Approuvé avec conditions', value: 'approved_with_conditions' },
+            { label: 'Rejeté - Modifications mineures requises', value: 'rejected_minor_changes' },
+            { label: 'Rejeté - Modifications majeures requises', value: 'rejected_major_changes' },
+            { label: 'Rejeté définitivement', value: 'rejected_permanently' },
           ],
         },
         {
           id: 'approval2_q2',
-          question: 'Montant budgété',
-          description: 'Montant total budgété pour ce contrat',
-          type: FieldType.Currency,
-          fieldKey: 'budgeted_amount',
-          isRequired: true,
+          question: "Conditions d'approbation",
+          description: 'Si approuvé avec conditions, précisez lesquelles',
+          type: FieldType.LongText,
+          fieldKey: 'approval_conditions',
+          isRequired: false,
           order: 2,
-          placeholder: 'Entrez le montant',
+          placeholder: 'Listez les conditions à respecter',
         },
         {
           id: 'approval2_q3',
-          question: 'Impact financier',
-          description: "Décrivez l'impact financier de ce contrat",
-          type: FieldType.LongText,
-          fieldKey: 'financial_impact',
+          question: 'Date limite de signature',
+          description: 'Date limite recommandée pour la signature',
+          type: FieldType.Date,
+          fieldKey: 'signature_deadline',
           isRequired: true,
           order: 3,
-          placeholder: "Détaillez l'impact financier",
         },
         {
           id: 'approval2_q4',
-          question: 'Centre de coûts',
-          description: 'Quel centre de coûts sera affecté?',
-          type: FieldType.Text,
-          fieldKey: 'cost_center',
-          isRequired: true,
-          order: 4,
-          placeholder: 'Entrez le centre de coûts',
-        },
-      ],
-    },
-    {
-      title: 'Validation finale',
-      questions: [
-        {
-          id: 'approval3_q1',
           question: 'Approbateur final',
-          description: "Nom de l'approbateur final",
+          description: "Nom de la personne qui donne l'approbation finale",
           type: FieldType.Text,
           fieldKey: 'final_approver',
           isRequired: true,
-          order: 1,
-          placeholder: 'Nom complet',
-        },
-        {
-          id: 'approval3_q2',
-          question: "Date d'approbation",
-          description: "Date de l'approbation finale",
-          type: FieldType.Date,
-          fieldKey: 'approval_date',
-          isRequired: true,
-          order: 2,
-        },
-        {
-          id: 'approval3_q3',
-          question: "Commentaires d'approbation",
-          description: "Commentaires ou conditions d'approbation",
-          type: FieldType.LongText,
-          fieldKey: 'approval_comments',
-          isRequired: false,
-          order: 3,
-          placeholder: 'Entrez vos commentaires',
-        },
-        {
-          id: 'approval3_q4',
-          question: 'Statut final',
-          description: 'Statut final du contrat après approbation',
-          type: FieldType.Select,
-          fieldKey: 'final_status',
-          isRequired: true,
           order: 4,
-          options: [
-            { label: 'Approuvé', value: 'approved' },
-            { label: 'Rejeté', value: 'rejected' },
-            { label: 'En attente', value: 'pending' },
-          ],
+          placeholder: 'Nom et fonction',
         },
       ],
     },
   ]
 
-  // Configuration pour l'étape NDA Draft
+  // 4. Configuration pour l'étape de Draft NDA
   const ndaDraftConfigs = [
     {
-      title: 'Informations de base NDA',
+      title: 'Informations de base du NDA',
       questions: [
         {
-          id: 'nda_draft_q1',
+          id: 'nda_draft1_q1',
           question: 'Type de NDA',
           description: "Sélectionnez le type d'accord de confidentialité",
           type: FieldType.Select,
@@ -906,156 +963,584 @@ async function seedQuestionnaires() {
           isRequired: true,
           order: 1,
           options: [
-            { label: 'Unilatéral', value: 'unilateral' },
-            { label: 'Bilatéral', value: 'bilateral' },
-            { label: 'Multilatéral', value: 'multilateral' },
+            { label: 'NDA unilatéral', value: 'unilateral' },
+            { label: 'NDA bilatéral', value: 'bilateral' },
+            { label: 'NDA multilatéral', value: 'multilateral' },
           ],
         },
         {
-          id: 'nda_draft_q2',
+          id: 'nda_draft1_q2',
           question: 'Durée de confidentialité',
-          description: 'Durée pendant laquelle les informations doivent rester confidentielles',
-          type: FieldType.Select,
-          fieldKey: 'confidentiality_duration',
+          description: 'Durée pendant laquelle les informations restent confidentielles',
+          type: FieldType.Number,
+          fieldKey: 'confidentiality_duration_years',
           isRequired: true,
           order: 2,
-          options: [
-            { label: '1 an', value: '1_year' },
-            { label: '2 ans', value: '2_years' },
-            { label: '5 ans', value: '5_years' },
-            { label: 'Illimitée', value: 'unlimited' },
-          ],
+          placeholder: "Nombre d'années",
+          validation: {
+            min: 1,
+            max: 20,
+          },
         },
         {
-          id: 'nda_draft_q3',
-          question: 'Portée des informations confidentielles',
-          description: 'Définissez la portée des informations confidentielles',
+          id: 'nda_draft1_q3',
+          question: 'Objet de la confidentialité',
+          description: "Décrivez l'objet ou le projet nécessitant la confidentialité",
           type: FieldType.LongText,
-          fieldKey: 'confidential_info_scope',
+          fieldKey: 'confidentiality_purpose',
           isRequired: true,
           order: 3,
-          placeholder: "Décrivez les types d'informations couvertes",
+          placeholder: "Décrivez le contexte et l'objet",
+        },
+        {
+          id: 'nda_draft1_q4',
+          question: 'Informations sensibles',
+          description: "Types d'informations considérées comme confidentielles",
+          type: FieldType.MultiSelect,
+          fieldKey: 'sensitive_info_types',
+          isRequired: true,
+          order: 4,
+          options: [
+            { label: 'Informations techniques', value: 'technical' },
+            { label: 'Informations commerciales', value: 'commercial' },
+            { label: 'Informations financières', value: 'financial' },
+            { label: 'Données clients', value: 'customer_data' },
+            { label: "Stratégie d'entreprise", value: 'business_strategy' },
+            { label: 'Propriété intellectuelle', value: 'intellectual_property' },
+          ],
+        },
+      ],
+    },
+    {
+      title: 'Parties concernées',
+      questions: [
+        {
+          id: 'nda_draft2_q1',
+          question: 'Partie divulgatrice',
+          description: "Nom de l'entité qui divulgue les informações confidentielles",
+          type: FieldType.Text,
+          fieldKey: 'disclosing_party',
+          isRequired: true,
+          order: 1,
+          placeholder: "Nom de l'entreprise divulgatrice",
+        },
+        {
+          id: 'nda_draft2_q2',
+          question: 'Partie réceptrice',
+          description: "Nom de l'entité qui reçoit les informações confidentielles",
+          type: FieldType.Text,
+          fieldKey: 'receiving_party',
+          isRequired: true,
+          order: 2,
+          placeholder: "Nom de l'entreprise réceptrice",
+        },
+        {
+          id: 'nda_draft2_q3',
+          question: 'Représentant légal divulgateur',
+          description: 'Contact du représentant légal de la partie divulgatrice',
+          type: FieldType.Contact,
+          fieldKey: 'disclosing_legal_contact',
+          isRequired: true,
+          order: 3,
+          placeholder: 'Coordonnées du représentant légal',
+        },
+        {
+          id: 'nda_draft2_q4',
+          question: 'Représentant légal récepteur',
+          description: 'Contact du représentant légal de la partie réceptrice',
+          type: FieldType.Contact,
+          fieldKey: 'receiving_legal_contact',
+          isRequired: true,
+          order: 4,
+          placeholder: 'Coordonnées du représentant légal',
         },
       ],
     },
   ]
 
-  // Configuration pour l'étape NDA Review
+  // 5. Configuration pour l'étape de NDA Review
   const ndaReviewConfigs = [
     {
-      title: 'Révision du NDA',
+      title: 'Évaluation de conformité NDA',
       questions: [
         {
-          id: 'nda_review_q1',
-          question: 'Niveau de protection',
-          description: 'Évaluez le niveau de protection offert par le NDA',
+          id: 'nda_review1_q1',
+          question: 'Conformité réglementaire',
+          description: 'Le NDA est-il conforme aux réglementations applicables?',
           type: FieldType.Select,
-          fieldKey: 'protection_level',
+          fieldKey: 'nda_regulatory_compliance',
           isRequired: true,
           order: 1,
           options: [
-            { label: 'Très élevé', value: 'very_high' },
-            { label: 'Élevé', value: 'high' },
-            { label: 'Moyen', value: 'medium' },
-            { label: 'Faible', value: 'low' },
+            { label: 'Entièrement conforme', value: 'fully_compliant' },
+            { label: 'Conforme avec ajustements mineurs', value: 'minor_adjustments' },
+            { label: 'Modifications importantes requises', value: 'major_changes' },
+            { label: 'Non conforme', value: 'non_compliant' },
           ],
         },
         {
-          id: 'nda_review_q2',
-          question: 'Clauses manquantes',
-          description: 'Identifiez les clauses manquantes ou à améliorer',
-          type: FieldType.MultiSelect,
-          fieldKey: 'missing_clauses',
+          id: 'nda_review1_q2',
+          question: 'Portée de la confidentialité',
+          description: 'La portée de la confidentialité est-elle appropriée?',
+          type: FieldType.Radio,
+          fieldKey: 'confidentiality_scope_adequate',
           isRequired: true,
           order: 2,
           options: [
-            {
-              label: 'Définition des informations confidentielles',
-              value: 'confidential_info_def',
-            },
-            { label: 'Obligations de non-divulgation', value: 'non_disclosure' },
-            { label: "Durée de l'obligation", value: 'duration' },
-            { label: 'Retour des informations', value: 'info_return' },
+            { label: 'Appropriée', value: 'appropriate' },
+            { label: 'Trop large', value: 'too_broad' },
+            { label: 'Trop restrictive', value: 'too_restrictive' },
           ],
         },
         {
-          id: 'nda_review_q3',
-          question: 'Commentaires juridiques',
-          description: 'Ajoutez vos commentaires juridiques sur le NDA',
-          type: FieldType.LongText,
-          fieldKey: 'legal_comments',
+          id: 'nda_review1_q3',
+          question: 'Durée de confidentialité',
+          description: 'La durée de confidentialité est-elle raisonnable?',
+          type: FieldType.Radio,
+          fieldKey: 'duration_reasonable',
           isRequired: true,
           order: 3,
-          placeholder: 'Entrez vos commentaires juridiques',
+          options: [
+            { label: 'Raisonnable', value: 'reasonable' },
+            { label: 'Trop courte', value: 'too_short' },
+            { label: 'Trop longue', value: 'too_long' },
+          ],
+        },
+        {
+          id: 'nda_review1_q4',
+          question: 'Exceptions à la confidentialité',
+          description: 'Les exceptions à la confidentialité sont-elles bien définies?',
+          type: FieldType.Radio,
+          fieldKey: 'exceptions_well_defined',
+          isRequired: true,
+          order: 4,
+          options: [
+            { label: 'Bien définies', value: 'well_defined' },
+            { label: 'Partiellement définies', value: 'partially_defined' },
+            { label: 'Mal définies', value: 'poorly_defined' },
+          ],
+        },
+      ],
+    },
+    {
+      title: 'Validation juridique NDA',
+      questions: [
+        {
+          id: 'nda_review2_q1',
+          question: 'Recommandations juridiques',
+          description: 'Recommandations du département juridique',
+          type: FieldType.LongText,
+          fieldKey: 'nda_legal_recommendations',
+          isRequired: true,
+          order: 1,
+          placeholder: 'Détaillez vos recommandations',
+        },
+        {
+          id: 'nda_review2_q2',
+          question: 'Risques identifiés',
+          description: 'Principaux risques identifiés dans ce NDA',
+          type: FieldType.LongText,
+          fieldKey: 'nda_identified_risks',
+          isRequired: true,
+          order: 2,
+          placeholder: 'Listez les risques potentiels',
+        },
+        {
+          id: 'nda_review2_q3',
+          question: 'Niveau de risque global',
+          description: 'Évaluation du niveau de risque de ce NDA',
+          type: FieldType.Select,
+          fieldKey: 'nda_risk_level',
+          isRequired: true,
+          order: 3,
+          options: [
+            { label: 'Faible', value: 'low' },
+            { label: 'Moyen', value: 'medium' },
+            { label: 'Élevé', value: 'high' },
+            { label: 'Critique', value: 'critical' },
+          ],
+        },
+        {
+          id: 'nda_review2_q4',
+          question: 'Approbation juridique',
+          description: 'Le département juridique approuve-t-il ce NDA?',
+          type: FieldType.Select,
+          fieldKey: 'nda_legal_approval',
+          isRequired: true,
+          order: 4,
+          options: [
+            { label: 'Approuvé', value: 'approved' },
+            { label: 'Approuvé avec réserves', value: 'approved_with_reservations' },
+            { label: 'Rejeté - Modifications requises', value: 'rejected_changes_required' },
+            { label: 'Rejeté', value: 'rejected' },
+          ],
         },
       ],
     },
   ]
 
-  // Configuration pour l'étape NDA Signature
+  // 6. Configuration pour l'étape de NDA Signature
   const ndaSignatureConfigs = [
     {
-      title: 'Signature du NDA',
+      title: 'Préparation à la signature',
       questions: [
         {
-          id: 'nda_sign_q1',
-          question: 'Méthode de signature',
-          description: 'Sélectionnez la méthode de signature préférée',
+          id: 'nda_signature1_q1',
+          question: 'Mode de signature',
+          description: 'Comment le NDA sera-t-il signé?',
           type: FieldType.Select,
           fieldKey: 'signature_method',
           isRequired: true,
           order: 1,
           options: [
             { label: 'Signature électronique', value: 'electronic' },
-            { label: 'Signature manuscrite', value: 'manual' },
-            { label: 'Signature numérique certifiée', value: 'certified_digital' },
+            { label: 'Signature manuscrite', value: 'handwritten' },
+            { label: 'Signature numérique certifiée', value: 'digital_certified' },
           ],
         },
         {
-          id: 'nda_sign_q2',
-          question: 'Signataires requis',
-          description: 'Liste des signataires requis',
-          type: FieldType.MultiSelect,
-          fieldKey: 'required_signers',
+          id: 'nda_signature1_q2',
+          question: 'Lieu de signature',
+          description: 'Où aura lieu la signature du NDA?',
+          type: FieldType.Adress,
+          fieldKey: 'signature_location',
           isRequired: true,
           order: 2,
+          placeholder: 'Adresse du lieu de signature',
+        },
+        {
+          id: 'nda_signature1_q3',
+          question: 'Date prévue de signature',
+          description: 'Date prévue pour la signature du NDA',
+          type: FieldType.Date,
+          fieldKey: 'planned_signature_date',
+          isRequired: true,
+          order: 3,
+        },
+        {
+          id: 'nda_signature1_q4',
+          question: 'Signataires',
+          description: 'Personnes autorisées à signer ce NDA',
+          type: FieldType.LongText,
+          fieldKey: 'authorized_signatories',
+          isRequired: true,
+          order: 4,
+          placeholder: 'Listez les noms et fonctions des signataires',
+        },
+      ],
+    },
+    {
+      title: 'Finalisation',
+      questions: [
+        {
+          id: 'nda_signature2_q1',
+          question: 'Témoins requis',
+          description: 'Des témoins sont-ils requis pour cette signature?',
+          type: FieldType.Radio,
+          fieldKey: 'witnesses_required',
+          isRequired: true,
+          order: 1,
           options: [
-            { label: 'Représentant légal', value: 'legal_representative' },
-            { label: 'Directeur général', value: 'ceo' },
-            { label: 'Responsable projet', value: 'project_manager' },
+            { label: 'Oui', value: 'yes' },
+            { label: 'Non', value: 'no' },
           ],
         },
         {
-          id: 'nda_sign_q3',
-          question: 'Date limite de signature',
-          description: 'Date limite pour obtenir toutes les signatures',
-          type: FieldType.Date,
-          fieldKey: 'signature_deadline',
+          id: 'nda_signature2_q2',
+          question: 'Copies requises',
+          description: 'Nombre de copies originales requises',
+          type: FieldType.Number,
+          fieldKey: 'required_copies',
           isRequired: true,
+          order: 2,
+          placeholder: 'Nombre de copies',
+          validation: {
+            min: 1,
+            max: 10,
+          },
+        },
+        {
+          id: 'nda_signature2_q3',
+          question: 'Instructions spéciales',
+          description: 'Instructions spéciales pour la signature',
+          type: FieldType.LongText,
+          fieldKey: 'special_signature_instructions',
+          isRequired: false,
           order: 3,
+          placeholder: 'Instructions particulières',
+        },
+        {
+          id: 'nda_signature2_q4',
+          question: 'Responsable du suivi',
+          description: 'Personne responsable du suivi post-signature',
+          type: FieldType.Contact,
+          fieldKey: 'follow_up_responsible',
+          isRequired: true,
+          order: 4,
+          placeholder: 'Coordonnées du responsable',
         },
       ],
     },
   ]
 
-  // Create questionnaires for each step
-  await Promise.all([
-    createQuestionnairesForStep(draftStep.id, draftStepConfigs),
-    createQuestionnairesForStep(legalReviewStep.id, legalReviewConfigs),
-    createQuestionnairesForStep(approvalStep.id, approvalConfigs),
-    createQuestionnairesForStep(ndaDraftStep.id, ndaDraftConfigs),
-    createQuestionnairesForStep(ndaReviewStep.id, ndaReviewConfigs),
-    createQuestionnairesForStep(ndaSignatureStep.id, ndaSignatureConfigs),
-  ])
+  // Création des questionnaires pour chaque étape
+  await createQuestionnairesForStep(draftStep.id, draftStepConfigs)
+  await createQuestionnairesForStep(legalReviewStep.id, legalReviewConfigs)
+  await createQuestionnairesForStep(approvalStep.id, approvalConfigs)
+  await createQuestionnairesForStep(ndaDraftStep.id, ndaDraftConfigs)
+  await createQuestionnairesForStep(ndaReviewStep.id, ndaReviewConfigs)
+  await createQuestionnairesForStep(ndaSignatureStep.id, ndaSignatureConfigs)
 
   console.log('Questionnaire data seeding completed successfully!')
 }
 
-main()
-  .catch((e) => {
-    console.error(e)
-    process.exit(1)
+// Fonction pour créer des logs d'étapes pour les contrats existants
+async function createContractStepLogs() {
+  console.log('Creating contract step logs...')
+
+  // Récupérer tous les contrats existants
+  const contracts = await prisma.contract.findMany({
+    include: {
+      workflow: {
+        include: {
+          steps: {
+            include: {
+              action: true,
+            },
+            orderBy: {
+              order: 'asc',
+            },
+          },
+        },
+      },
+    },
   })
-  .finally(async () => {
+
+  for (const contract of contracts) {
+    console.log(`Creating logs for contract: ${contract.title}`)
+
+    // Pour chaque contrat, créer un log pour chaque étape du workflow
+    for (const step of contract.workflow.steps) {
+      // Prendre la première action de l'étape comme action par défaut
+      const firstAction = step.action[0]
+
+      if (firstAction) {
+        await prisma.contractStepLog.create({
+          data: {
+            contract_id: contract.id,
+            step_id: step.id,
+            last_action_id: firstAction.id,
+          },
+        })
+      }
+    }
+  }
+
+  console.log('Contract step logs created successfully!')
+}
+
+// Fonction pour créer des permissions et les assigner aux rôles
+async function createPermissions() {
+  console.log('Creating permissions...')
+
+  const permissions = [
+    { name: 'CREATE_CONTRACT' },
+    { name: 'READ_CONTRACT' },
+    { name: 'UPDATE_CONTRACT' },
+    { name: 'DELETE_CONTRACT' },
+    { name: 'MANAGE_WORKFLOW' },
+    { name: 'LEGAL_REVIEW' },
+    { name: 'FINAL_APPROVAL' },
+    { name: 'MANAGE_USERS' },
+    { name: 'VIEW_REPORTS' },
+    { name: 'MANAGE_SETTINGS' },
+  ]
+
+  // Créer toutes les permissions
+  for (const perm of permissions) {
+    await prisma.permission.upsert({
+      where: { name: perm.name },
+      update: {},
+      create: perm,
+    })
+  }
+
+  // Récupérer les rôles et permissions créés
+  const adminRole = await prisma.role.findUnique({ where: { name: 'Admin' } })
+  const legalRole = await prisma.role.findUnique({ where: { name: 'Legal' } })
+  const userRole = await prisma.role.findUnique({ where: { name: 'User' } })
+
+  const allPermissions = await prisma.permission.findMany()
+
+  // Assigner toutes les permissions à l'Admin
+  for (const permission of allPermissions) {
+    await prisma.permissionRole.upsert({
+      where: {
+        permission_id_role_id: {
+          permission_id: permission.id,
+          role_id: adminRole.id,
+        },
+      },
+      update: {},
+      create: {
+        permission_id: permission.id,
+        role_id: adminRole.id,
+      },
+    })
+  }
+
+  // Assigner des permissions spécifiques au rôle Legal
+  const legalPermissions = allPermissions.filter((p) =>
+    ['READ_CONTRACT', 'UPDATE_CONTRACT', 'LEGAL_REVIEW', 'VIEW_REPORTS'].includes(p.name)
+  )
+
+  for (const permission of legalPermissions) {
+    await prisma.permissionRole.upsert({
+      where: {
+        permission_id_role_id: {
+          permission_id: permission.id,
+          role_id: legalRole.id,
+        },
+      },
+      update: {},
+      create: {
+        permission_id: permission.id,
+        role_id: legalRole.id,
+      },
+    })
+  }
+
+  // Assigner des permissions de base au rôle User
+  const userPermissions = allPermissions.filter((p) =>
+    ['CREATE_CONTRACT', 'READ_CONTRACT', 'UPDATE_CONTRACT'].includes(p.name)
+  )
+
+  for (const permission of userPermissions) {
+    await prisma.permissionRole.upsert({
+      where: {
+        permission_id_role_id: {
+          permission_id: permission.id,
+          role_id: userRole.id,
+        },
+      },
+      update: {},
+      create: {
+        permission_id: permission.id,
+        role_id: userRole.id,
+      },
+    })
+  }
+
+  console.log('Permissions created and assigned successfully!')
+}
+
+// Fonction pour créer des notifications de test
+async function createSampleNotifications() {
+  console.log('Creating sample notifications...')
+
+  const users = await prisma.user.findMany()
+
+  const notificationTypes = [
+    {
+      type: 'CONTRACT_CREATED',
+      message: 'Un nouveau contrat a été créé et nécessite votre attention',
+    },
+    {
+      type: 'LEGAL_REVIEW_REQUIRED',
+      message: 'Un contrat nécessite une révision juridique',
+    },
+    {
+      type: 'APPROVAL_PENDING',
+      message: "Un contrat est en attente d'approbation finale",
+    },
+    {
+      type: 'CONTRACT_SIGNED',
+      message: 'Un contrat a été signé avec succès',
+    },
+  ]
+
+  for (const user of users) {
+    // Créer 2-3 notifications par utilisateur
+    const numNotifications = Math.floor(Math.random() * 2) + 2
+
+    for (let i = 0; i < numNotifications; i++) {
+      const randomNotification =
+        notificationTypes[Math.floor(Math.random() * notificationTypes.length)]
+
+      await prisma.notification.create({
+        data: {
+          user_id: user.id,
+          type: randomNotification.type,
+          payload: {
+            message: randomNotification.message,
+            contract_id: 'standard-contract-1', // Référence à un contrat existant
+            timestamp: new Date().toISOString(),
+          },
+          is_read: Math.random() > 0.5, // 50% de chance d'être lue
+        },
+      })
+    }
+  }
+
+  console.log('Sample notifications created successfully!')
+}
+
+// Fonction pour créer des paramètres système
+async function createSystemSettings() {
+  console.log('Creating system settings...')
+
+  const settings = [
+    {
+      key: 'EMAIL_NOTIFICATIONS_ENABLED',
+      value: { enabled: true },
+    },
+    {
+      key: 'DEFAULT_CONTRACT_LANGUAGE',
+      value: { language: 'Français' },
+    },
+    {
+      key: 'MAX_FILE_UPLOAD_SIZE',
+      value: { size_mb: 50 },
+    },
+    {
+      key: 'SIGNATURE_VALIDITY_DAYS',
+      value: { days: 30 },
+    },
+    {
+      key: 'AUTO_ARCHIVE_CONTRACTS',
+      value: { enabled: true, days_after_completion: 365 },
+    },
+  ]
+
+  for (const setting of settings) {
+    await prisma.setting.upsert({
+      where: { key: setting.key },
+      update: { value: setting.value },
+      create: setting,
+    })
+  }
+
+  console.log('System settings created successfully!')
+}
+
+main()
+  .then(async () => {
+    // Créer les logs d'étapes pour les contrats
+    await createContractStepLogs()
+
+    // Créer les permissions
+    await createPermissions()
+
+    // Créer des notifications d'exemple
+    await createSampleNotifications()
+
+    // Créer les paramètres système
+    await createSystemSettings()
+
     await prisma.$disconnect()
+  })
+  .catch(async (e) => {
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit(1)
   })

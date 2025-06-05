@@ -20,25 +20,25 @@ enum TypeActions {
   AUTRE
 }
 
-  enum FieldType {
-    Text              // Texte simple
-    LongText          // Texte long (paragraphe)
-    Number            // Nombre entier
-    Date              // Date
-    Time              // Heure
-    Select            // Sélection unique
-    MultiSelect       // Sélection multiple
-    Radio
-    Currency          // Montant avec devise
-    Email             // Adresse email
-    Phone             // Numéro de téléphone
-    Adress           // Adresse complète
-    File              // Pièce jointe
-    Country
-    Nationality
-    TypeOfCompany
-    Contact
-  }
+enum FieldType {
+  Text // Texte simple
+  LongText // Texte long (paragraphe)
+  Number // Nombre entier
+  Date // Date
+  Time // Heure
+  Select // Sélection unique
+  MultiSelect // Sélection multiple
+  Radio
+  Currency // Montant avec devise
+  Email // Adresse email
+  Phone // Numéro de téléphone
+  Adress // Adresse complète
+  File // Pièce jointe
+  Country
+  Nationality
+  TypeOfCompany
+  Contact
+}
 
 enum Languages {
   Français
@@ -133,12 +133,12 @@ model UserContract {
 //Dynnamic fields
 // Modèle pour définir les champs dynamiques
 model DynamicField {
-  id                String      @id @default(uuid())
-  key               String
-  type              FieldType   // Type de champ
-  description       String?     // Description/aide pour le champ
-  created_at        DateTime    @default(now())
-  updated_at        DateTime    @updatedAt
+  id             String          @id @default(uuid())
+  key            String
+  type           FieldType // Type de champ
+  description    String? // Description/aide pour le champ
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
   workflow_field WorkflowField[]
 }
 
@@ -151,24 +151,22 @@ model WorkflowField {
   @@id([field_id, workflow_id])
 }
 
-
-
 model Contract {
-  id           String    @id @default(uuid())
- workflow     Workflow          @relation(fields: [workflow_id], references: [id])
- workflow_id  String
-  title        String
-  status       Status
-  data         Json
-  file_list    String
-  language     Languages
-  isConfidential Boolean
-  created_by_id String?   //User.id
-  created_at   DateTime   @default(now())
-  updated_at   DateTime   @default(now())
-  archived_at  DateTime?
-  comments     Comment[]
-  usercontracts  UserContract[]
+  id                 String            @id @default(uuid())
+  workflow           Workflow          @relation(fields: [workflow_id], references: [id])
+  workflow_id        String
+  title              String
+  status             Status
+  data               Json
+  file_list          String
+  language           Languages
+  isConfidential     Boolean
+  created_by_id      String? //User.id
+  created_at         DateTime          @default(now())
+  updated_at         DateTime          @default(now())
+  archived_at        DateTime?
+  comments           Comment[]
+  usercontracts      UserContract[]
   contract_step_logs ContractStepLog[]
 }
 
@@ -176,8 +174,8 @@ model Workflow {
   id               String          @id @default(uuid())
   name             String
   description      String?
-  contract_name   String?
-  file_names        String[]
+  contract_name    String?
+  file_names       String[]
   created_by       User?           @relation("CreatedWorkflows", fields: [created_by_id], references: [id])
   created_by_id    String?
   template_content String?
@@ -189,25 +187,25 @@ model Workflow {
 }
 
 model Step {
-  id          String   @id @default(uuid())
-  workflow    Workflow @relation(fields: [workflow_id], references: [id])
-  workflow_id String
-  name        String
-  contract_name String?
-  description String?
-  order       Int
-  action      Action[]
+  id               String            @id @default(uuid())
+  workflow         Workflow          @relation(fields: [workflow_id], references: [id])
+  workflow_id      String
+  name             String
+  contract_name    String?
+  description      String?
+  order            Int
+  action           Action[]
   contractStepLogs ContractStepLog[]
 }
 
 model Action {
-  id          String      @id @default(uuid())
-  step        Step        @relation(fields: [step_id], references: [id])
-  step_id     String
-  type        TypeActions
-  config      Json
-  order       Int
-  is_required Boolean     @default(true)
+  id               String            @id @default(uuid())
+  step             Step              @relation(fields: [step_id], references: [id])
+  step_id          String
+  type             TypeActions
+  config           Json
+  order            Int
+  is_required      Boolean           @default(true)
   contractStepLogs ContractStepLog[]
 }
 
@@ -250,14 +248,13 @@ model Ticket {
 
 // Je veux creer une nouvelle table nommé contract_step_log qui contiendra les logs des étapes de chaque contrat. Cette table doit contenir les colonnes suivantes : id, contract_id, step_id, last_action_id, created_at, updated_at. La colonne contract_id doit être une clé étrangère vers la table Contract et la colonne step_id doit être une clé étrangère vers la table Step. La colonne last_action_id doit être une clé étrangère vers la table Action. La colonne created_at doit être de type DateTime et la colonne updated_at doit être de type DateTime. La colonne updated_at doit être mise à jour automatiquement à chaque fois qu'une ligne est modifiée.
 model ContractStepLog {
-  id            String   @id @default(uuid())
-  contract      Contract @relation(fields: [contract_id], references: [id])
-  contract_id   String
-  step          Step     @relation(fields: [step_id], references: [id])
-  step_id       String
-  last_action   Action   @relation(fields: [last_action_id], references: [id])
+  id             String   @id @default(uuid())
+  contract       Contract @relation(fields: [contract_id], references: [id])
+  contract_id    String
+  step           Step     @relation(fields: [step_id], references: [id])
+  step_id        String
+  last_action    Action   @relation(fields: [last_action_id], references: [id])
   last_action_id String
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 }
-

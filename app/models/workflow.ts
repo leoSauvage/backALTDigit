@@ -34,7 +34,7 @@ export default class Workflow {
   public static async getNoCategory() {
     const workflows = await prisma.workflow.findMany({
       where: {
-        category_id: null,
+        AND: [{ category_id: null }, { is_active: true }],
       },
       orderBy: {
         created_at: 'desc',
@@ -299,50 +299,23 @@ export default class Workflow {
    * Supprime un workflow et toutes ses étapes associées
    * @param id ID du workflow à supprimer
    */
-  //   public static async delete(id: string) {
-  //     // Vérifier si le workflow existe
-  //     const workflow = await prisma.workflow.findUnique({
-  //       where: { id },
-  //       include: {
-  //         steps: {
-  //           include: {
-  //             stepActions: true,
-  //           },
-  //         },
-  //         //contracts: true
-  //       },
-  //     })
+  public static async delete(id: string) {
+    // Vérifier si le workflow existe
+    const workflow = await prisma.workflow.findUnique({
+      where: { id },
+    })
 
-  //     if (!workflow) {
-  //       throw new Error('Workflow not found')
-  //     }
+    if (!workflow) {
+      throw new Error('Workflow not found')
+    }
 
-  //     // Vérifier si des contrats utilisent ce workflow
-  //     // if (workflow.contracts.length > 0) {
-  //     //     throw new Error('Cannot delete workflow that is being used by contracts')
-  //     // }
+    await prisma.workflow.update({
+      where: { id },
+      data: {
+        is_active: false,
+      },
+    })
 
-  //     // Transaction pour assurer l'intégrité des données lors de la suppression
-  //     await prisma.$transaction(async (tx) => {
-  //       // 1. Supprimer toutes les stepActions associées aux étapes du workflow
-  //       for (const step of workflow.steps) {
-  //         await tx.stepAction.deleteMany({
-  //           where: { step_id: step.id },
-  //         })
-  //       }
-
-  //       // 2. Supprimer toutes les étapes
-  //       await tx.step.deleteMany({
-  //         where: { workflow_id: id },
-  //       })
-
-  //       // 3. Supprimer le workflow
-  //       await tx.workflow.delete({
-  //         where: { id },
-  //       })
-  //     })
-
-  //     return { success: true, message: 'Workflow deleted successfully' }
-  //   }
-  // }
+    return { success: true, message: 'Workflow deleted successfully' }
+  }
 }

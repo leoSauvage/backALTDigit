@@ -12,15 +12,10 @@ datasource db {
 enum Permission {
   CREATE_CONTRACT
   MODIFY_CONTRACT
-  READ_ONLY_CONTRACT
   ARCHIVE_CONTRACT
+  SHARE_CONTRACT
   CREATE_FOLDER
   MODIFY_FOLDER
-  READ_ONLY_FOLDER
-  INVITE_USER
-  CREATE_ROLE
-  MODIFY_ROLE
-  READ_ONLY_ROLE
 }
 
 // Proposition d'extension de l'enum TypeActions
@@ -198,6 +193,7 @@ model Workflow {
   category_id      String?
   created_at       DateTime        @default(now())
   updated_at       DateTime        @default(now())
+  is_active        Boolean         @default(true)
   steps            Step[]
   workflowfield    WorkflowField[]
   contracts        Contract[]

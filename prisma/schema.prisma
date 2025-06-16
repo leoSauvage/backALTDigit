@@ -72,10 +72,10 @@ model Company {
   id      String   @id @default(uuid())
   name    String   @unique
   email   String   @unique
-  users   User[]
   tickets Ticket[]
   files   File[]
   roles   Role[]
+  teams   Team[]
 }
 
 model File {
@@ -95,6 +95,15 @@ model Role {
   permissions Permission[]
 }
 
+model Team {
+  id         String   @id @default(uuid())
+  name       String
+  color      String
+  company    Company  @relation(fields: [company_id], references: [id])
+  company_id String
+  users      User[]
+}
+
 model User {
   id               String         @id @default(uuid())
   email            String         @unique
@@ -106,8 +115,8 @@ model User {
   updated_at       DateTime       @default(now())
   role             Role           @relation(fields: [role_id], references: [id])
   role_id          String
-  company          Company        @relation(fields: [company_id], references: [id])
-  company_id       String
+  team             Team?           @relation(fields: [team_id], references: [id])
+  team_id          String?
   createdWorkflows Workflow[]     @relation("CreatedWorkflows")
   comments         Comment[]
   notifications    Notification[]

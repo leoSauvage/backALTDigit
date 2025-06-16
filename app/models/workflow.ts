@@ -262,6 +262,7 @@ export default class Workflow {
         }
 
         const questionData = await QuestionnaireModel.getQuestionnaireConfig(id)
+        console.log('questionData', questionData)
         await DynamicField.updateField(questionData, id)
 
         const updatedWorkflow = await prisma.workflow.findUnique({

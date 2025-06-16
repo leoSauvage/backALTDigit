@@ -21,9 +21,10 @@ export default class Company {
         id: id,
       },
       include: {
-        roles: { true,
-        include: 
-          users: true,
+        roles: {
+          include: {
+            users: true,
+          },
         },
       },
     })

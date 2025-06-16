@@ -1,0 +1,82 @@
+import prisma from '#lib/prisma'
+import Redis from '@ioc:Adonis/Addons/Redis'
+import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+
+export default class WorkflowController {
+  public async getWorkflowStructure({ params, response }: HttpContextContract) {
+    const { workflowId } = params
+    const cacheKey = `workflow:${workflowId}`
+
+    // Cache Redis côté serveur (plus persistant)
+    const cached = await Redis.get(cacheKey)
+    if (cached) {
+      return response.json(JSON.parse(cached))
+    }
+
+    // Requête Prisma optimisée
+    const workflow = await prisma.workflow.findUnique({
+      where: { id: workflowId },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        contract_name: true,
+        steps: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            order: true,
+            _count: {
+              select: { action: true },
+            },
+          },
+          orderBy: { order: 'asc' },
+        },
+      },
+    })
+
+    if (!workflow) {
+      return response.notFound({ message: 'Workflow non trouvé' })
+    }
+
+    // Actions de la première étape seulement
+    const firstStepActions =
+      workflow.steps.length > 0
+        ? await prisma.action.findMany({
+            where: { step_id: workflow.steps[0].id },
+            select: {
+              id: true,
+              type: true,
+              config: true,
+              order: true,
+              is_required: true,
+            },
+            orderBy: { order: 'asc' },
+          })
+        : []
+
+    const result = {
+      workflow: {
+        id: workflow.id,
+        name: workflow.name,
+        description: workflow.description,
+        contract_name: workflow.contract_name,
+      },
+      steps: workflow.steps.map((step: any) => ({
+        id: step.id,
+        name: step.name,
+        description: step.description,
+        order: step.order,
+        actionCount: step._count.action,
+        isPreloaded: step.order === 0,
+      })),
+      firstStepActions,
+      totalSteps: workflow.steps.length,
+    }
+
+    // Cache Redis pour 15 minutes
+    await Redis.setex(cacheKey, 900, JSON.stringify(result))
+    return response.json(result)
+  }
+}

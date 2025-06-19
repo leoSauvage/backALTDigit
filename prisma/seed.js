@@ -428,4 +428,3 @@ seedQuestionnaires()
   })
 
     await prisma.$disconnect()
-  })

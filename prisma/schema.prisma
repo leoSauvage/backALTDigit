@@ -68,8 +68,9 @@ enum Status {
 }
 
 enum Rights {
-  EDITOR
-  COMMENTATOR
+  READ     // Peut seulement lire
+  COMMENT  // Peut lire et commenter
+  EDIT     // Peut tout faire (lire, commenter, modifier)
 }
 
 // MODELS
@@ -125,9 +126,11 @@ model UserContract {
   user_id     String
   contract_id String
 
-  user     User     @relation(fields: [user_id], references: [id])
-  contract Contract @relation(fields: [contract_id], references: [id])
-  droit    Rights
+  user        User     @relation(fields: [user_id], references: [id])
+  contract    Contract @relation(fields: [contract_id], references: [id])
+
+  droit       Rights
+  assigned_at DateTime @default(now()) // Optionnel mais utile pour savoir quand l'accès a été donné
 
   @@id([user_id, contract_id])
 }
@@ -155,18 +158,17 @@ model WorkflowField {
 
 model Contract {
   id                 String            @id @default(uuid())
+  title              String
+  description        String
   workflow           Workflow          @relation(fields: [workflow_id], references: [id])
   workflow_id        String
-  title              String
-  status             Status
+  isConfidential     Boolean           @default(false)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  status             Status            @default(PREPARATION)
   data               Json
-  file_list          String
+  file_list          String[]
   language           Languages
-  isConfidential     Boolean
-  created_by_id      String? //User.id
-  created_at         DateTime          @default(now())
-  updated_at         DateTime          @default(now())
-  archived_at        DateTime?
   comments           Comment[]
   usercontracts      UserContract[]
   contract_step_logs ContractStepLog[]

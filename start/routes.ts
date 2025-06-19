@@ -19,5 +19,6 @@ router.get('/api/test', async ({ response }) => {
 // Entreprise
 Route.get('/api/contract-all', '#controllers/admin_compagnies_controller.contractList')
 Route.get('/api/contact-steps/:id', '#controllers/admin_compagnies_controller.contractSteps')
+Route.get('/api/contact-steps/:stepID', '#controllers/admin_compagnies_controller.nextAction')
 Route.get('/api/init-contract/:workflowId', '#controllers/admin_compagnies_controller.initContract')
 Route.get('/api/get-step-action/:id', '#controllers/admin_compagnies_controller.initContract')

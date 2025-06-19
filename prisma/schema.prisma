@@ -158,17 +158,19 @@ model WorkflowField {
 
 model Contract {
   id                 String            @id @default(uuid())
-  title              String
-  description        String
   workflow           Workflow          @relation(fields: [workflow_id], references: [id])
   workflow_id        String
-  isConfidential     Boolean           @default(false)
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
-  status             Status            @default(PREPARATION)
+  title              String
+  description        String
+  status             Status
   data               Json
-  file_list          String[]
+  file_list          String
   language           Languages
+  isConfidential     Boolean
+  created_by_id      String? //User.id
+  created_at         DateTime          @default(now())
+  updated_at         DateTime          @default(now())
+  archived_at        DateTime?
   comments           Comment[]
   usercontracts      UserContract[]
   contract_step_logs ContractStepLog[]

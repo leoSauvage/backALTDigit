@@ -12,9 +12,9 @@ export default class ContratsController {
     const { title, description, workflowId, isConfidential } = request.all()
     const newContract = await prisma.contract.create({
       data: {
-        title,
+        title: title,
         description,
-        workflowId,
+        workflow_id: workflowId,
         isConfidential,
       },
     })

@@ -13,15 +13,10 @@ datasource db {
 enum Permission {
   CREATE_CONTRACT
   MODIFY_CONTRACT
-  READ_ONLY_CONTRACT
   ARCHIVE_CONTRACT
+  SHARE_CONTRACT
   CREATE_FOLDER
   MODIFY_FOLDER
-  READ_ONLY_FOLDER
-  INVITE_USER
-  CREATE_ROLE
-  MODIFY_ROLE
-  READ_ONLY_ROLE
 }
 
 // Proposition d'extension de l'enum TypeActions
@@ -79,10 +74,10 @@ model Company {
   id      String   @id @default(uuid())
   name    String   @unique
   email   String   @unique
-  users   User[]
   tickets Ticket[]
   files   File[]
   roles   Role[]
+  teams   Team[]
 }
 
 model File {
@@ -102,6 +97,15 @@ model Role {
   permissions Permission[]
 }
 
+model Team {
+  id         String   @id @default(uuid())
+  name       String
+  color      String
+  company    Company  @relation(fields: [company_id], references: [id])
+  company_id String
+  users      User[]
+}
+
 model User {
   id               String         @id @default(uuid())
   email            String         @unique
@@ -113,8 +117,8 @@ model User {
   updated_at       DateTime       @default(now())
   role             Role           @relation(fields: [role_id], references: [id])
   role_id          String
-  company          Company        @relation(fields: [company_id], references: [id])
-  company_id       String
+  team             Team?           @relation(fields: [team_id], references: [id])
+  team_id          String?
   createdWorkflows Workflow[]     @relation("CreatedWorkflows")
   comments         Comment[]
   notifications    Notification[]
@@ -201,6 +205,7 @@ model Workflow {
   category_id      String?
   created_at       DateTime        @default(now())
   updated_at       DateTime        @default(now())
+  is_active        Boolean         @default(true)
   steps            Step[]
   workflowfield    WorkflowField[]
   contracts        Contract[]

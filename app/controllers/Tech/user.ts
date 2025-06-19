@@ -2,7 +2,6 @@ import { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
 
 export default class UserController {
-
   public async createUser({ request, response }: HttpContext) {
     try {
       const { email } = request.only(['email'])

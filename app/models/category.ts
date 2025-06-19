@@ -4,7 +4,11 @@ export default class Category {
   public static async getAll(): Promise<Category[]> {
     return prisma.category.findMany({
       include: {
-        workflows: true,
+        workflows: {
+          where: {
+            is_active: true,
+          },
+        },
       },
     })
   }

@@ -4,10 +4,24 @@ import Role from '#models/role'
 export default class RolesController {
   public async updatePermissions({ request, response }: HttpContext) {
     try {
-      const { roleName, permissions } = request.only(['roleName', 'permissions'])
-      const updatedRole = await Role.updatePermissions(roleName, permissions)
-      return response.status(201).json(updatedRole)
-    } catch (error: any) {
+      const { companyId, permissionAssignments: raw } = request.only([
+        'companyId',
+        'permissionAssignments',
+      ])
+      const permissionAssignments = raw as Record<string, Record<string, boolean>>
+      const transformedPermissions: Record<string, Record<string, boolean>> = {}
+      for (const [permission, roles] of Object.entries(permissionAssignments)) {
+        for (const [role, isEnabled] of Object.entries(roles)) {
+          if (!transformedPermissions[role]) {
+            transformedPermissions[role] = {}
+          }
+          transformedPermissions[role][permission] = isEnabled
+        }
+      }
+      const updatedRoles = await Role.updatePermissions(companyId, transformedPermissions)
+
+      return response.status(201).json({ message: 'Permissions updated', data: updatedRoles })
+    } catch (error) {
       console.error('Error updating permissions:', error)
       return response.status(500).json({
         error: 'Failed to update permissions',

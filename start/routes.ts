@@ -19,6 +19,8 @@ router.get('/api/test', async ({ response }) => {
 
 // Entreprise
 Route.get('/api/contract-all', '#controllers/admin_compagnies_controller.contractList')
+Route.post('/api/company', '#controllers/users_controller.createCompany')
+Route.post('/api/create-contract', '#controllers/contrats_controller.store')
 Route.get('/api/contact-steps/:id', '#controllers/admin_compagnies_controller.contractSteps')
 Route.get('/api/contact-steps/:stepID', '#controllers/admin_compagnies_controller.nextAction')
 Route.get('/api/init-contract/:workflowId', '#controllers/admin_compagnies_controller.initContract')

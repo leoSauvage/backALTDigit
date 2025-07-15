@@ -25,3 +25,10 @@ Route.get('/api/contact-steps/:id', '#controllers/admin_compagnies_controller.co
 Route.get('/api/contact-steps/:stepID', '#controllers/admin_compagnies_controller.nextAction')
 Route.get('/api/init-contract/:workflowId', '#controllers/admin_compagnies_controller.initContract')
 Route.get('/api/get-step-action/:id', '#controllers/admin_compagnies_controller.initContract')
+
+Route.get('/api/init-contract/:workflowId', '#controllers/admin_compagnies_controller.initContract')
+Route.post('/api/submit-action', '#controllers/admin_compagnies_controller.submitAction')
+Route.post(
+  '/api/get-previous-step-data',
+  '#controllers/admin_compagnies_controller.getPreviousStepData'
+)

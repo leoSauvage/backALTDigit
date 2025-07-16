@@ -268,7 +268,6 @@ export default class QuestionnaireModel {
         type: TypeActions.QUESTIONNAIRE,
       },
     })
-    console.log(questionnaireActions)
     const questionData = []
     for (const action of questionnaireActions) {
       const config: any = action.config
@@ -276,13 +275,11 @@ export default class QuestionnaireModel {
         continue
       }
       for (const question of config.questions) {
-        // Vérifier si la question contient une variable et un type, puis les stocker
-        if (question.variable && question.type) {
-          console.log('question', question.variable, question.type)
+        if (question.config.variable && question.config.type) {
           questionData.push({
-            variable: question.variable,
-            type: question.type,
-            id: question.id,
+            variable: question.config.variable,
+            type: question.config.type,
+            id: question.config.id,
           })
         }
       }

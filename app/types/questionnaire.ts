@@ -20,7 +20,18 @@ export interface QuestionConfig {
   }
 }
 
+export interface QuestionCondition {
+  variable: string
+  operator: string
+  value: any
+}
+
+export interface Question {
+  config: QuestionConfig
+  conditions: QuestionCondition[]
+}
+
 export interface QuestionnaireActionConfig {
   title: string
-  questions: QuestionConfig[]
+  questions: Question[]
 }

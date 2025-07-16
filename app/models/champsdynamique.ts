@@ -60,7 +60,6 @@ export default class DynamicField {
   ) {
     if (questionData.length > 0) {
       for (const data of questionData) {
-        console.log('data', data)
         // Vérifier l'existence d'un dynamicField pour cette variable
         let existingField = await prisma.dynamicField.findFirst({
           where: {
@@ -74,6 +73,7 @@ export default class DynamicField {
         })
         const fieldType = await DynamicField.getFieldTypeFromString(data.type)
         if (!existingField) {
+
           existingField = await prisma.dynamicField.create({
             data: {
               id: data.id,
@@ -81,7 +81,6 @@ export default class DynamicField {
               type: fieldType,
             },
           })
-          console.log('create', existingField)
         } else {
           existingField = await prisma.dynamicField.update({
             where: { id: existingField.id },
@@ -90,7 +89,6 @@ export default class DynamicField {
               type: fieldType,
             },
           })
-          console.log('update', existingField)
         }
         // Vérifier si on a déjà workflowField qui relie ce champ au workflow
         const lien = await prisma.workflowField.upsert({
@@ -106,7 +104,6 @@ export default class DynamicField {
             field_id: existingField.id,
           },
         })
-        console.log('lien', lien)
       }
     }
   }

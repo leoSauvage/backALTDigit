@@ -34,6 +34,6 @@ export default await Env.create(new URL('../', import.meta.url), {
   | Variables for configuring the mail package
   |----------------------------------------------------------
   */
-  SMTP_HOST: Env.schema.string.optional(), // Rendu optionnel
-  SMTP_PORT: Env.schema.string.optional(), // Rendu optionnel
+  SMTP_HOST: Env.schema.string(),
+  SMTP_PORT: Env.schema.string(),
 })

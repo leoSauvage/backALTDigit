@@ -121,11 +121,12 @@ export default class CompaniesController {
 
   public async createUser({ request, params, response }: HttpContext) {
     try {
-      const { email, firstName, lastName, teamId } = request.only([
+      const { email, firstName, lastName, teamId, password } = request.only([
         'email',
         'firstName',
         'lastName',
         'teamId',
+        'password',
       ])
       const { roleId } = params
       // Validation des données
@@ -134,14 +135,14 @@ export default class CompaniesController {
           error: 'Email, name and role are required',
         })
       }
-
-      const user = await User.create(email, firstName, lastName, roleId, teamId)
-      await mail.send((message) => {
+      const hashPassword = await User.hashPassword(password)
+      const user = await User.create(email, firstName, lastName, roleId, teamId, hashPassword)
+      await mail.sendLater((message) => {
         message
-          .to('leo@coumbassa-sanden.com')
+          .to(email)
           .from('leo@coumbassa-sanden.com')
-          .subject('Bonjour ' + user.first_name)
-          .text('Bienvenue dans l\'application ALTDigit !')
+          .subject('Bonjour !')
+          .text("Bienvenue dans l'application ALTDigit !")
       })
       return response.status(201).json(user)
     } catch (error: any) {
@@ -171,6 +172,70 @@ export default class CompaniesController {
         error: 'Failed to retrieve users',
         details: error.message || 'Unknown error',
       })
+    }
+  }
+
+  public static async sendMail(emails: string[], contractTitle: string, typeOfMail: string) {
+    try {
+      console.log('Sending email to:', emails)
+      let subject: string
+      let body: string
+      switch (typeOfMail) {
+        case 'CREATION':
+          subject = 'Création du contrat ' + contractTitle
+          body = 'Vous avez créé un contrat avec succès.'
+          break
+        case 'QUESTIONNAIRE':
+          subject = 'Complétion du questionnaire du contrat ' + contractTitle
+          body =
+            'Vous venez de remplir le questionnaire. Vous pouvez désormais passer à l’étape suivante.'
+          break
+        case 'VALIDATION':
+          subject = 'Validation du contrat ' + contractTitle
+          body = 'Votre contrat a été validé avec succès. Vous pouvez désormais le signer.'
+          break
+        default:
+          subject = 'Erreur'
+          body = 'Vous avez reçu une notification.'
+      }
+      for (const email of emails) {
+        await mail.sendLater((message) => {
+          message.to(email).from('leo@coumbassa-sanden.com').subject(subject).text(body)
+        })
+      }
+    } catch (error: any) {
+      console.error('Error sending email:', error)
+      throw new Error('Failed to send email')
+    }
+  }
+
+  public static async sendParticipantMail(
+    email: string,
+    contractTitle: string,
+    typeOfMail: string
+  ) {
+    try {
+      let subject: string
+      let body: string
+      switch (typeOfMail) {
+        case 'DELETE':
+          subject = 'ALT Digit '
+          body = 'Vous avez été retiré à la participation du contrat ' + contractTitle
+          break
+        case 'ADD':
+          subject = 'ALT Digit '
+          body = 'Vous avez été ajouté à la participation du contrat ' + contractTitle
+          break
+        default:
+          subject = 'Erreur'
+          body = 'Vous avez reçu une notification.'
+      }
+      await mail.sendLater((message) => {
+        message.to(email).from('leo@coumbassa-sanden.com').subject(subject).text(body)
+      })
+    } catch (error: any) {
+      console.error('Error sending email:', error)
+      throw new Error('Failed to send email')
     }
   }
 }

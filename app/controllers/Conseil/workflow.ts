@@ -1,4 +1,6 @@
+import QuestionnaireModel from '#models/Actions/questionnaire'
 import Category from '#models/category'
+import DynamicField from '#models/champsdynamique'
 import Workflow from '#models/workflow'
 import { HttpContext } from '@adonisjs/core/http'
 
@@ -140,7 +142,11 @@ export default class WorkflowController {
           return step
         })
       }
-      const workflow = await Workflow.updateWorkflow(workflowId, workflowData)
+      await Workflow.updateWorkflow(workflowId, workflowData)
+      const questionData = await QuestionnaireModel.getQuestionnaireConfig(workflowId)
+      await DynamicField.updateField(questionData, workflowId)
+      const workflow = await Workflow.getWorkflowIncludeDynamic(workflowId)
+
       return response.json({
         message: 'Workflow mis à jour avec succès',
         data: workflow,

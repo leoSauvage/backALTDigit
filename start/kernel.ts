@@ -44,9 +44,9 @@ router.use([
  */
 export const middleware = router.named({
   auth: () => import('#middleware/auth_middleware'),
-  //superAdmin: () => import('#middleware/auth/superAdmin'),
-  conseil: () => import('#middleware/auth/conseil'),
-  checkPermission: () => import('#middleware/permissions/check_permission'),
+  client: () => import('#middleware/auth/ClientAuth'),
+  // conseil: () => import('#middleware/auth/conseil'),
+  // checkPermission: () => import('#middleware/permissions/check_permission'),
 })
 
 // Connexion à Prisma au démarrage

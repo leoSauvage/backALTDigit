@@ -4,6 +4,8 @@ import './routes/conseilSubRoutes/Actions/questionnaire.js'
 import './routes/conseilSubRoutes/etape.js'
 import './routes/conseilSubRoutes/workflow.js'
 import './routes/tech.js'
+import './routes/entreprise.js'
+import './routes/public.js'
 
 // const AdminCompagniesController = () => import('#controllers/admin_compagnies_controller');
 

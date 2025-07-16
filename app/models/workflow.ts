@@ -215,12 +215,14 @@ export default class Workflow {
               for (const { id: actionId, ...actionData } of action) {
                 if (actionId && existingActionIds.includes(actionId)) {
                   // Action exists, so update
+                  console.log('Updating existing action', actionData.config)
                   await tx.action.update({
                     where: { id: actionId },
                     data: actionData,
                   })
                 } else {
                   // Create new action
+                  console.log('Creating new action', actionData)
                   await tx.action.create({
                     data: {
                       ...actionData,
@@ -260,29 +262,56 @@ export default class Workflow {
             }
           }
         }
-
-        const questionData = await QuestionnaireModel.getQuestionnaireConfig(id)
-        console.log('questionData', questionData)
-        await DynamicField.updateField(questionData, id)
-
-        const updatedWorkflow = await prisma.workflow.findUnique({
-          where: { id },
-          include: {
-            workflowfield: {
-              include: {
-                dynamic_field: true,
-              },
-            },
-          },
-        })
-
-        return updatedWorkflow
       },
       {
         maxWait: 2000,
         timeout: 20000,
       }
     )
+  }
+
+  public static async getWorkflowIncludeDynamic(id: string) {
+    // Force reload of dynamic fields to ensure updated data is retrieved
+    const updatedWorkflow = await prisma.workflow.findUnique({
+      where: { id },
+      include: {
+        workflowfield: {
+          include: {
+            dynamic_field: true,
+          },
+        },
+      },
+    })
+    return updatedWorkflow
+  }
+
+  public static async getValidateId(id: string) {
+    // Récupérer le workflow avec ses étapes et actions
+    const workflow = await prisma.workflow.findUnique({
+      where: { id },
+      include: {
+        steps: {
+          include: {
+            action: {
+              where: { type: TypeActions.GENERER },
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
+      },
+    })
+    if (!workflow) {
+      throw new Error(`Workflow with ID ${id} not found`)
+    }
+    const genererAction = workflow.steps.flatMap((step) => step.action).find((action) => action?.id)
+
+    if (!genererAction) {
+      throw new Error('No GENERER action found in this workflow')
+    }
+
+    return genererAction.id
   }
 
   public static async updateWorkflowCategory(

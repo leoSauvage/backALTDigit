@@ -17,7 +17,7 @@ const EnterpriseRouter = router
     )
 
     //Création
-    router.post('/contracts/create', '#controllers/admin_compagnies_controller.createContract')
+    router.post('/contracts/create', '#controllers/contrats_controller.store')
 
 
     router.get('contracts/:id/fields', '#controllers/Client/contract.getFieldValues')

@@ -134,8 +134,14 @@ export default class Contract {
           },
         },
       })
+      console.log('userId', userId, userContract)
       if (!userContract) {
-        throw new Error('User contract not found')
+        await prisma.userContract.create({
+          data: {
+            user_id: userId,
+            contract_id: id,
+          }
+        })
       }
       const previousSupervisor = await prisma.userContract.findFirst({
         where: {

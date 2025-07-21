@@ -141,11 +141,10 @@ export default class WorkflowController {
     }
   }
 
-  public async addClient({ params, request, response }: HttpContext) {
+  public async addClient({ params, request, response, user }: HttpContext) {
     try {
       const { id } = params
-      const requestBody = request.body()
-      const clientId = Object.keys(requestBody)[0]
+      const clientId = user.id
       const title = await Contract.addClient(id, clientId)
       ws.io?.to(`contract_${id}`).emit('addParticipant', {
         contractId: id,
@@ -162,10 +161,10 @@ export default class WorkflowController {
     }
   }
 
-  public async setSupervisor({ params, response }: HttpContext) {
+  public async setSupervisor({ params, response, user }: HttpContext) {
     try {
-      const { id, clientId } = params
-      await Contract.setSupervisor(id, clientId)
+      const { id } = params
+      await Contract.setSupervisor(id, user?.id)
       return response.json({ success: true })
     } catch (error: any) {
       console.error('Error setting supervisor:', error)

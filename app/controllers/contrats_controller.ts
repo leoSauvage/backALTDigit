@@ -19,10 +19,11 @@ export default class ContratsController {
         start_date: startDate, // Convert string to Date if provided
         end_date: endDate, // Convert string to Date if provided
         status: 'PREPARATION',
-        language: 'Français', 
-        data: {}, 
+        language: 'Français',
+        data: {},
       },
     })
+    
     return newContract
   }
 

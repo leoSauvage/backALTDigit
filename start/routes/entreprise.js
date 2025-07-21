@@ -30,7 +30,7 @@ const EnterpriseRouter = router
 
     router.get('contracts/:id/participants', '#controllers/Client/contract.getParticipants')
     router.post('contracts/:id/clients', '#controllers/Client/contract.addClient')
-    router.put('contracts/:id/clients/:clientId/supervisor', '#controllers/Client/contract.setSupervisor')
+    router.put('contracts/:id/supervisor', '#controllers/Client/contract.setSupervisor')
     router.get('contracts/:id/is-supervisor', '#controllers/Client/contract.isSupervisor')
     router.put('contracts/:id/supervisor-validation', '#controllers/Client/contract.setSupervisorValidation')
     router.delete('contracts/:id/clients/:clientId', '#controllers/Client/contract.deleteClient')

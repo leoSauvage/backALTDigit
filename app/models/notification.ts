@@ -11,7 +11,7 @@ export default class DynamicField {
     if (!participants) {
       throw new Error('Contract not found')
     }
-    const notifications = participants.usercontracts.map((participant) => {
+    participants.usercontracts.map((participant) => {
       ws.io?.to(`user_${participant.user.id}`).emit('notificationContract', {
         message,
       })

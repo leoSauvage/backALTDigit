@@ -1,5 +1,6 @@
 import { Server } from 'socket.io'
 import server from '@adonisjs/core/services/server'
+
 class ws {
   io: Server | undefined
   private booted = false

@@ -99,6 +99,7 @@ export default class Contract {
 
   public static async addClient(id: string, userId: string): Promise<string> {
     try {
+      console.log('contrat', userId)
       const contract = await prisma.contract.findUnique({
         where: { id },
       })
@@ -106,12 +107,23 @@ export default class Contract {
       if (!contract) {
         throw new Error('Contract not found')
       }
-      await prisma.userContract.create({
-        data: {
-          user_id: userId,
-          contract_id: id,
+      const userContract = await prisma.userContract.findUnique({
+        where: {
+          user_id_contract_id: {
+            user_id: userId,
+            contract_id: id,
+          },
         },
       })
+
+      if (!userContract) {
+        await prisma.userContract.create({
+          data: {
+            user_id: userId,
+            contract_id: id,
+          },
+        })
+      }
       return contract.title
     } catch (error) {
       throw new Error('Failed to add client to contract')
@@ -134,13 +146,12 @@ export default class Contract {
           },
         },
       })
-      console.log('userId', userId, userContract)
       if (!userContract) {
         await prisma.userContract.create({
           data: {
             user_id: userId,
             contract_id: id,
-          }
+          },
         })
       }
       const previousSupervisor = await prisma.userContract.findFirst({

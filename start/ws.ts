@@ -6,6 +6,7 @@ app.ready(() => {
   io?.on('connection', (socket: any) => {
     socket.on('joinContractRoom', (contractId: string) => {
       socket.join(`contract_${contractId}`)
+      console.log('contractJoin')
     })
     socket.on('joinUserRoom', (userId: string) => {
       socket.join(`user_${userId}`)

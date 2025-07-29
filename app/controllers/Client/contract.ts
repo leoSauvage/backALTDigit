@@ -15,7 +15,17 @@ export default class WorkflowController {
       if (!contract) {
         return response.status(404).json({ error: 'Contract not found' })
       }
-      return response.json(contract.data?.data)
+    const raw = contract.data as Record<string, Record<string, { data?: Record<string, any> }>>;
+
+    const allValues: Record<string, any> = {};
+    for (const stepMap of Object.values(raw)) {
+      for (const actionEntry of Object.values(stepMap)) {
+        if (actionEntry.data && typeof actionEntry.data === 'object') {
+          Object.assign(allValues, actionEntry.data);
+        }
+      }
+    }
+    return response.json(allValues);
     } catch (error: any) {
       console.error('Error retrieving file list:', error)
       return response.status(500).json({
@@ -141,10 +151,11 @@ export default class WorkflowController {
     }
   }
 
-  public async addClient({ params, request, response, user }: HttpContext) {
+  public async addClient({ params, request, response }: HttpContext) {
     try {
       const { id } = params
-      const clientId = user.id
+      const { clientId } = request.body()
+      console.log('contrat', id, clientId)
       const title = await Contract.addClient(id, clientId)
       ws.io?.to(`contract_${id}`).emit('addParticipant', {
         contractId: id,

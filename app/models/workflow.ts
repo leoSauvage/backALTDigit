@@ -69,7 +69,7 @@ export default class Workflow {
         },
       },
     })
-
+    
     if (!workflow) {
       throw new Error(`Workflow with ID ${id} not found`)
     }
@@ -214,15 +214,11 @@ export default class Workflow {
               // Create or update actions
               for (const { id: actionId, ...actionData } of action) {
                 if (actionId && existingActionIds.includes(actionId)) {
-                  // Action exists, so update
-                  console.log('Updating existing action', actionData.config)
                   await tx.action.update({
                     where: { id: actionId },
                     data: actionData,
                   })
                 } else {
-                  // Create new action
-                  console.log('Creating new action', actionData)
                   await tx.action.create({
                     data: {
                       ...actionData,

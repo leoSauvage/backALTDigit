@@ -9,21 +9,24 @@ export default class ContratsController {
    */
   async store({ request }: HttpContext) {
     //Fait un post dans la table contrats pour stoker: le titre, la description, workflow_id: string; isConfidential: boolean;
-    const { title, description, workflowId, isConfidential, startDate, endDate } = request.body()
+    const { title, description, workflowId, isConfidential, startDate, endDate, type } =
+      request.body()
+  console.log("request.body",isConfidential)
     const newContract = await prisma.contract.create({
       data: {
         title: title,
         description: description,
         workflow_id: workflowId,
-        isConfidential: isConfidential === 'true', // Convert string to boolean
+        isConfidential: isConfidential, // Convert string to boolean
         start_date: startDate, // Convert string to Date if provided
         end_date: endDate, // Convert string to Date if provided
+        type: type,
         status: 'PREPARATION',
         language: 'Français',
         data: {},
       },
     })
-    
+    console.log("contrat",newContract)
     return newContract
   }
 

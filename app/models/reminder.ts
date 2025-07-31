@@ -119,11 +119,9 @@ export default class Reminder {
       where: { contract_id: contractId },
       orderBy: { date: 'asc' },
     })
-
     if (!reminders || reminders.length === 0) {
       return null
     }
-
     return reminders.map((reminder) => ({
       id: reminder.id,
       date: dayjs(reminder.date).format('DD-MM-YYYY'),

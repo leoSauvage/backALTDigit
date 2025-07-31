@@ -107,7 +107,6 @@ export default class AdminCompagniesController {
         contractId = null,
         language = 'Français',
       } = request.body()
-
       // Si c'est la première soumission, créer le contrat
       let contract
       if (!contractId) {
@@ -131,7 +130,7 @@ export default class AdminCompagniesController {
           where: { id: contractId },
           select: { data: true },
         })
-
+        
         const existingData: any = existingContract?.data || {}
         const updatedData = {
           ...existingData,
@@ -140,7 +139,7 @@ export default class AdminCompagniesController {
             [actionId]: formData,
           },
         }
-
+        console.log('formData:', updatedData)
         contract = await prisma.contract.update({
           where: { id: contractId },
           data: {

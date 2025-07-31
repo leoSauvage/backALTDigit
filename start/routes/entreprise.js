@@ -16,6 +16,12 @@ const EnterpriseRouter = router
       '#controllers/enterprise/questionnairesController.submit'
     )
 
+    router.get('commercial-contracts', '#controllers/Client/contract.commercial_index')
+    router.get('legal-contracts', '#controllers/Client/contract.legal_index')
+    router.get('vault-contracts', '#controllers/Client/contract.vault_index')
+    router.get('archive-contracts', '#controllers/Client/contract.archive_index')
+    router.put('contracts/:id/archived', '#controllers/Client/contract.archive')
+
     //Création
     router.post('/contracts/create', '#controllers/contrats_controller.store')
 
@@ -25,6 +31,7 @@ const EnterpriseRouter = router
     router.put('contracts/:id/end', '#controllers/Client/contract.updateEndDate') 
     router.put('contracts/:id/start', '#controllers/Client/contract.updateStartDate') 
     router.get('/contracts/:id/info', '#controllers/Client/contract.getInfos')
+    router.get('contracts/:id/data/:actionId', '#controllers/Client/contract.getDatas')
 
     router.get('contracts/:id/workflow', '#controllers/Client/contract.getWorkflowId')
 
@@ -77,8 +84,5 @@ const EnterpriseRouter = router
   .use(middleware.client())
 
 // Routes avec permissions spécifiques
-router
-  .get('/api/enterprise/reports', '#controllers/enterprise/reportsController.index')
-  .middleware(['auth', 'checkPermission:view_reports'])
 
 export default EnterpriseRouter

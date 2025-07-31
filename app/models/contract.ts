@@ -15,6 +15,71 @@ export default class Contract {
     }
   }
 
+  public static async archivedContract(id: string): Promise<ContractModel | null> {
+    try {
+      const contract = await prisma.contract.update({
+        where: { id },
+        data: {
+          archived_at: new Date(),
+        },
+      })
+      return contract
+    } catch (error) {
+      throw new Error('Failed to archive contract')
+    }
+  }
+
+  public static async getContractsByUserCompany(userId: string): Promise<Contract[]> {
+    // 1. Récupère l'utilisateur avec sa team (et donc sa company via team.company_id)
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        team: {
+          select: { company_id: true }
+        }
+      }
+    })
+
+    if (!user || !user.team) {
+      // pas de team → pas de société → rien à renvoyer
+      return []
+    }
+
+    const companyId = user.team.company_id
+
+    // 2. Récupère tous les utilisateurs de cette même company
+    const members = await prisma.user.findMany({
+      where: {
+        team: { company_id: companyId },
+      },
+      select: { id: true },
+    })
+    const memberIds = members.map(m => m.id)
+
+    if (memberIds.length === 0) {
+      return []
+    }
+
+    // 3. Récupère tous les contracts liés à ces users via UserContract
+    const userContracts = await prisma.userContract.findMany({
+      where: {
+        user_id: { in: memberIds },
+      },
+      select: {
+        contract: true,
+      },
+    })
+
+    // 4. Extraie les contrats, en supprimant les doublons
+    const contracts = userContracts.map(uc => uc.contract)
+    const uniqueById = new Map<string, Contract>()
+    for (const c of contracts) {
+      uniqueById.set(c.id, c)
+    }
+
+    return Array.from(uniqueById.values())
+  }
+
   public static async setContractType(id: string, isIndefinite: boolean): Promise<void> {
     const contract = await prisma.contract.findUnique({
       where: { id },

@@ -6,8 +6,95 @@ import User from '#models/user'
 import { HttpContext } from '@adonisjs/core/http'
 import CompaniesController from './company.ts'
 import ws from '#models/ws'
+import { ContractType } from '@prisma/client'
 
 export default class WorkflowController {
+  public async commercial_index({ response, user }: HttpContext) {
+    try {
+      const contracts = await Contract.getContractsByUserCompany(user.id)
+      if (!contracts || contracts.length === 0) {
+        return response.status(404).json({ error: 'No contracts found for this user' })
+      }
+      const commercialContracts = contracts.filter(
+        (contract) => contract.type === ContractType.COMMERCIAL && contract.archived_at === null
+      )
+      return response.json(commercialContracts)
+    } catch (error: any) {
+      console.error('Error retrieving contracts:', error)
+      return response.status(500).json({
+        error: 'Failed to retrieve contracts',
+        details: error.message || 'Unknown error',
+      })
+    }
+  }
+
+  public async legal_index({ response, user }: HttpContext) {
+    try {
+      const contracts = await Contract.getContractsByUserCompany(user.id)
+      if (!contracts || contracts.length === 0) {
+        return response.status(404).json({ error: 'No contracts found for this user' })
+      }
+      const legalContracts = contracts.filter(
+        (contract) => contract.type === ContractType.JURIDIQUE && contract.archived_at === null
+      )
+      return response.json(legalContracts)
+    } catch (error: any) {
+      console.error('Error retrieving contracts:', error)
+      return response.status(500).json({
+        error: 'Failed to retrieve contracts',
+        details: error.message || 'Unknown error',
+      })
+    }
+  }
+
+  public async vault_index({ response, user }: HttpContext) {
+    try {
+      const contracts = await Contract.getContractsByUserCompany(user.id)
+      if (!contracts || contracts.length === 0) {
+        return response.status(404).json({ error: 'No contracts found for this user' })
+      }
+      const vaultContracts = contracts.filter((contract) => contract.isConfidential === true && contract.archived_at === null)
+      return response.json(vaultContracts)
+    } catch (error: any) {
+      console.error('Error retrieving contracts:', error)
+      return response.status(500).json({
+        error: 'Failed to retrieve contracts',
+        details: error.message || 'Unknown error',
+      })
+    }
+  }
+
+  public async archive_index({ response, user }: HttpContext) {
+    try {
+      const contracts = await Contract.getContractsByUserCompany(user.id)
+      if (!contracts || contracts.length === 0) {
+        return response.status(404).json({ error: 'No contracts found for this user' })
+      }
+      const archiveContracts = contracts.filter((contract) => contract.archived_at !== null)
+      return response.json(archiveContracts)
+    } catch (error: any) {
+      console.error('Error retrieving contracts:', error)
+      return response.status(500).json({
+        error: 'Failed to retrieve contracts',
+        details: error.message || 'Unknown error',
+      })
+    }
+  }
+
+  public async archive({ params, response }: HttpContext) {
+    try {
+      const { id } = params
+      const contract = await Contract.getContract(id)
+      if (!contract) {
+        return response.status(404).json({ error: 'Contract not found' })
+      }
+      await Contract.archivedContract(id)
+      return response.json({ message: 'Contract archived successfully' })
+    } catch (error: any) {
+      return response.status(500).json("erreur d'archivage")
+    }
+  }
+
   public async getFieldValues({ params, response }: HttpContext) {
     try {
       const { id } = params
@@ -125,6 +212,35 @@ export default class WorkflowController {
       }
       const { start_date, end_date } = contract
       return response.status(200).json({ start_date, end_date })
+    } catch (error: any) {
+      console.error('Error retrieving file list:', error)
+      return response.status(500).json({
+        error: 'Failed to retrieve file list',
+        details: error.message || 'Unknown error',
+      })
+    }
+  }
+
+  public async getDatas({ params, response }: HttpContext) {
+    try {
+      const { id, actionId } = params
+      const contract = await Contract.getContract(id)
+      if (!contract) {
+        return response.status(404).json({ error: 'Contract not found' })
+      }
+      const data = contract.data
+      if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+        return response.status(500).json({ error: 'Contract data format is invalid' })
+      }
+
+      // 3) Recherche de l'actionId dans les stepId
+      for (const stepId of Object.keys(data)) {
+        const step = (data as Record<string, any>)[stepId]
+
+        if (step && typeof step === 'object' && step[actionId]) {
+          return response.json(step[actionId].data)
+        }
+      }
     } catch (error: any) {
       console.error('Error retrieving file list:', error)
       return response.status(500).json({
@@ -321,6 +437,7 @@ export default class WorkflowController {
     try {
       const { id } = params
       const reminders = await Reminder.getReminders(id)
+      console.log('Reminders for contract:', id, reminders)
       if (!reminders) {
         return response.status(404).json({ error: 'No reminders found for this contract' })
       }
